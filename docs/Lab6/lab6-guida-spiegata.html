@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guida Semplice a Lab 6 — Eventi, Log, Modifier, Payable, Interfacce &amp; Comandi Console</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-soft: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #7c3aed;
+      --accent-light: #f5f3ff;
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --term-bg: #0f172a;
+      --term-header: #1e293b;
+      --term-text: #e2e8f0;
+      --term-green: #4ade80;
+      --term-yellow: #fde047;
+      --term-cyan: #38bdf8;
+      --term-purple: #c084fc;
+      --term-orange: #fb923c;
+      --term-muted: #94a3b8;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .brand {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+      border: 1px solid #dbeafe;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 0.98rem;
+      color: var(--primary-dark);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.87rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+
+    .nav-link.active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .nav-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--surface-soft);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .nav-link.active .nav-num {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .main-content {
+      padding: 32px 40px 80px;
+      min-width: 0;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1e1b4b 100%);
+      color: #f8fafc;
+      border-radius: 16px;
+      padding: 32px 34px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #7dd3fc;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 1.95rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #cbd5e1;
+      max-width: 78ch;
+      font-size: 1rem;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .pillar-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .pillar-card strong {
+      display: block;
+      color: #fff;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+    }
+
+    .pillar-card span {
+      display: block;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    /* Sections & Cards */
+    section {
+      scroll-margin-top: 24px;
+      margin-bottom: 34px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .section-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .section-tag.purple { background: var(--accent-light); color: var(--accent); }
+    .section-tag.green { background: var(--success-light); color: var(--success); }
+    .section-tag.amber { background: var(--warning-light); color: var(--warning); }
+
+    h2 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: -0.015em;
+      color: var(--text);
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 1.12rem;
+      color: var(--text);
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--text-muted);
+    }
+
+    ul, ol {
+      margin: 0 0 14px;
+      padding-left: 22px;
+      color: var(--text-muted);
+    }
+
+    li { margin-bottom: 6px; }
+
+    strong { color: var(--text); }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--surface-soft);
+      color: #b91c1c;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      border-left: 4px solid var(--primary);
+      background: var(--primary-light);
+      color: #1e3a8a;
+      font-size: 0.94rem;
+    }
+
+    .callout strong { color: inherit; }
+
+    .callout.info { border-color: var(--primary); background: var(--primary-light); color: #1e3a8a; }
+    .callout.tip { border-color: var(--success); background: var(--success-light); color: #065f46; }
+    .callout.warn { border-color: var(--warning); background: var(--warning-light); color: #92400e; }
+    .callout.purple { border-color: var(--accent); background: var(--accent-light); color: #4c1d95; }
+
+    /* Two columns */
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 14px 0;
+    }
+
+    .mini-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .mini-box h4 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+      color: var(--text);
+    }
+
+    /* Code & Terminal Blocks */
+    .code-wrap {
+      background: var(--term-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 14px 0 18px;
+      border: 1px solid #1e293b;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .code-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--term-header);
+      border-bottom: 1px solid #334155;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      font-family: var(--font-mono);
+    }
+
+    .code-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 10px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot.r { background: #ef4444; }
+    .dot.y { background: #eab308; }
+    .dot.g { background: #22c55e; }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.18); }
+
+    pre {
+      margin: 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.58;
+      color: var(--term-text);
+    }
+
+    .t-prompt { color: var(--term-cyan); font-weight: 700; }
+    .t-cmd { color: #f8fafc; font-weight: 600; }
+    .t-str { color: var(--term-green); }
+    .t-num { color: var(--term-yellow); }
+    .t-kw { color: var(--term-purple); }
+    .t-com { color: var(--term-muted); font-style: italic; }
+    .t-out { color: #cbd5e1; }
+    .t-key { color: #7dd3fc; }
+
+    /* Step-by-step walkthrough list */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .step-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      background: #fcfdff;
+    }
+
+    .step-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .step-num {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.76rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .step-cmd {
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #0f172a;
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 6px;
+      word-break: break-all;
+    }
+
+    .step-body {
+      font-size: 0.93rem;
+      color: var(--text-muted);
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 14px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 700;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    /* Interactive Receipt Explorer */
+    .receipt-controls {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .receipt-explorer {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .receipt-fields {
+      background: var(--term-bg);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      border: 1px solid #1e293b;
+    }
+
+    .r-row {
+      display: flex;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.12s;
+      border: 1px solid transparent;
+      word-break: break-all;
+    }
+
+    .r-row:hover { background: rgba(255, 255, 255, 0.08); }
+    .r-row.selected {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .r-key { color: #7dd3fc; min-width: 155px; flex-shrink: 0; }
+    .r-val-str { color: #4ade80; }
+    .r-val-num { color: #fde047; }
+    .r-val-null { color: #94a3b8; }
+
+    .receipt-detail {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .receipt-detail h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--primary-dark);
+      font-family: var(--font-mono);
+    }
+
+    /* Bytes32 visual grid */
+    .bytes-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 14px 0;
+    }
+
+    .byte-cell {
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 6px 8px;
+      min-width: 50px;
+      text-align: center;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .byte-cell.pad {
+      background: var(--surface-soft);
+      opacity: 0.72;
+      border-style: dashed;
+    }
+
+    .byte-hex {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .byte-char {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    /* SVG diagrams */
+    .diagram-box {
+      background: #fcfdff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .diagram-caption {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* Remix badges */
+    .remix-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0 14px;
+    }
+
+    .r-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .r-pill.red { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .r-pill.orange { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .r-pill.blue { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+
+    /* Search & Filter bar */
+    .glossary-toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 14px 0;
+    }
+
+    .search-input {
+      flex: 1 1 260px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      font-size: 0.92rem;
+      font-family: var(--font-sans);
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill {
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filter-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Quiz */
+    .quiz-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      background: #fcfdff;
+    }
+
+    .quiz-q {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      font-size: 0.98rem;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .quiz-opt {
+      text-align: left;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+
+    .quiz-opt:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .quiz-opt.correct {
+      background: var(--success-light);
+      border-color: var(--success);
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    .quiz-opt.wrong {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      color: #991b1b;
+    }
+
+    .quiz-feedback {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.ok { background: var(--success-light); color: #065f46; }
+    .quiz-feedback.ko { background: var(--danger-light); color: #991b1b; }
+
+    .quiz-score-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 1040px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: auto;
+        z-index: 40;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 16px;
+      }
+      .brand { display: none; }
+      .nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .nav-link { white-space: nowrap; padding: 6px 10px; }
+      .main-content { padding: 20px 18px 60px; }
+      .pillars-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .receipt-explorer { grid-template-columns: 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+      .card { padding: 18px 16px; }
+      .hero { padding: 22px 18px; }
+      .hero h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">Lab 6 — Guida Semplice</div>
+        <div class="brand-sub">Manuale + Output Console + Soluzioni</div>
+      </div>
+      <ul class="nav-list" id="navList">
+        <li><a class="nav-link active" href="#panoramica"><span class="nav-num">0</span>Panoramica veloce</a></li>
+        <li><a class="nav-link" href="#eventi-basi"><span class="nav-num">1</span>Cosa sono gli Events</a></li>
+        <li><a class="nav-link" href="#lab61-63"><span class="nav-num">2</span>6.1–6.3: Emettere e Leggere</a></li>
+        <li><a class="nav-link" href="#lab64"><span class="nav-num">3</span>6.4: Filtrare + Receipt</a></li>
+        <li><a class="nav-link" href="#lab65"><span class="nav-num">4</span>6.5: Ascoltare in Diretta</a></li>
+        <li><a class="nav-link" href="#more-events"><span class="nav-num">5</span>OwnedToken &amp; require</a></li>
+        <li><a class="nav-link" href="#modifier-payable"><span class="nav-num">6</span>Modifier, Payable &amp; Transfer</a></li>
+        <li><a class="nav-link" href="#erc20-interface"><span class="nav-num">7</span>Task ERC-20 &amp; Interfacce</a></li>
+        <li><a class="nav-link" href="#dizionario"><span class="nav-num">8</span>Dizionario Comandi</a></li>
+        <li><a class="nav-link" href="#quiz"><span class="nav-num">9</span>Mini-Quiz (5 domande)</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+      <!-- PANORAMICA -->
+      <section id="panoramica">
+        <div class="hero">
+          <div class="hero-badge">Software Security &amp; Blockchain • Unit 4 • Lab 6</div>
+          <h1>Tutto il Lab 6 spiegato semplice (con i tuoi comandi console)</h1>
+          <p>
+            Qui trovi spiegato passo-passo cosa fa ogni parte di <strong>Lab 6 - Manual.pdf</strong>, cosa significano
+            esattamente tutti i comandi che hai scritto nella console di Hardhat e come leggere gli output salvati in
+            <strong>Lab6Manual.docx</strong> — senza dare nulla per scontato.
+          </p>
+
+          <div class="pillars-grid">
+            <div class="pillar-card">
+              <strong>1. Events &amp; Logs (6.1–6.5)</strong>
+              <span>Come uno smart contract lascia una “ricevuta” leggibile fuori dalla blockchain, e come leggerla, filtrarla o ascoltarla live.</span>
+            </div>
+            <div class="pillar-card">
+              <strong>2. Contratti &amp; Controlli</strong>
+              <span>Due contratti che si parlano (<code>OwnedToken</code> + <code>TokenCreator</code>), stringhe fisse <code>bytes32</code> e controlli con <code>require</code>.</span>
+            </div>
+            <div class="pillar-card">
+              <strong>3. Permessi &amp; ETH veri</strong>
+              <span>Come bloccare funzioni al solo proprietario (<code>modifier</code>) e come ricevere o inviare Ether in Wei (<code>payable</code>, <code>transfer</code>).</span>
+            </div>
+            <div class="pillar-card">
+              <strong>4. Token ERC-20 &amp; Interfacce</strong>
+              <span>Come un contratto usa un “telecomando” (<code>interface</code>) per chiamare un token già deployato sulla rete.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Prima cosa da sapere: PDF vs il tuo ambiente (perché sembrano diversi)</h3>
+          <p>
+            Se guardando il PDF e poi il tuo terminale hai pensato <em>“perché sul PDF ci sono schermate di Remix o codice di Truffle mentre io uso Hardhat?”</em>, ecco il motivo esatto:
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cosa usa il PDF</th>
+                  <th>Cosa usi tu nel repo (<code>blocky-the-blockchain</code>)</th>
+                  <th>A cosa corrisponde in parole povere</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Truffle + Mocha</strong> (es. sez. 6.2 con <code>artifacts.require</code> e <code>tx.logs[0]</code>)</td>
+                  <td><strong>Hardhat 3 + Ethers.js 6</strong> (<code>npm run console</code> e file <code>.ts</code>)</td>
+                  <td>È il “telecomando” JavaScript/TypeScript che parla con la blockchain locale. I concetti sono identici, cambiano solo i nomi dei metodi.</td>
+                </tr>
+                <tr>
+                  <td><strong>Remix IDE</strong> (schermate pagg. 3–6, indirizzo account tipo <code>0x5B38...</code>)</td>
+                  <td><strong>Hardhat Node locale</strong> su <code>127.0.0.1:8545</code> (Chain ID <code>31337</code>)</td>
+                  <td>È una blockchain finta e gratuita sul tuo Mac. Ti regala 20 account pieni di ETH finti (il #0 è sempre <code>0xf39F...2266</code>, il #1 è <code>0x7099...79C8</code>).</td>
+                </tr>
+                <tr>
+                  <td><strong><code>pragma solidity ^0.8.0;</code></strong></td>
+                  <td><strong><code>pragma solidity ^0.8.28;</code></strong></td>
+                  <td>Stessa famiglia 0.8.x: i contratti funzionano allo stesso modo.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout warn">
+            <strong>Nota sul refuso nel PDF:</strong> all'inizio di pagina 1 del PDF, sotto <em>Objective</em>, c'è scritto <em>“inheritance and mappings”</em> (un copia-incolla rimasto dal Lab 5!), mentre i 3 punti elenco subito sotto dicono la cosa giusta: <strong>Events, Emit, Log, Filtri e Sottoscrizioni</strong>.
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 1: COSA SONO GLI EVENTS -->
+      <section id="eventi-basi">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag">Concetto chiave</span>
+            <h2>1. Cosa sono gli Events e perché non usiamo solo variabili?</h2>
+          </div>
+
+          <p>
+            Immagina un negozio: quando compri qualcosa succedono due cose diverse:
+          </p>
+          <div class="two-col">
+            <div class="mini-box">
+              <h4>Storage del contratto = Il Registro del Notaio</h4>
+              <p style="margin:0;">
+                Salvare dati nelle variabili permanenti dello smart contract (storage) <strong>costa tantissimo gas</strong>. Serve solo per dati che il contratto stesso deve rileggere in futuro (es. chi è il proprietario, quanti token hai).
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>Event / Log = Lo Scontrino / Notifica</h4>
+              <p style="margin:0;">
+                Un <strong>Event</strong> scrive una voce nella cronologia della transazione (<em>transaction log</em>). <strong>Costa molto meno gas</strong> ed è pensato per essere letto dal mondo esterno (un sito web, MetaMask, o la tua console).
+              </p>
+            </div>
+          </div>
+
+          <div class="callout info">
+            <strong>Regola d'oro:</strong> gli smart contract sulla blockchain <strong>NON possono leggere gli eventi emessi in passato</strong>. Gli eventi servono esclusivamente a far sapere a chi sta fuori (frontend, script, utenti) cosa è successo dentro una transazione!
+          </div>
+
+          <h3>A cosa serve la parola magica <code>indexed</code>?</h3>
+          <p>
+            In quasi tutto il Lab 6 vedrai questa riga:
+          </p>
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Solidity • Dichiarazione Evento</span></div>
+            <pre><span class="t-kw">event</span> Transfer(<span class="t-kw">address</span> <span class="t-key">indexed</span> from, <span class="t-kw">address</span> <span class="t-key">indexed</span> to, <span class="t-kw">uint</span> amount);</pre>
+          </div>
+          <ul>
+            <li><strong><code>from</code> e <code>to</code> hanno <code>indexed</code></strong>: vengono salvati in una sezione speciale chiamata <strong>topics</strong> (come le etichette di un archivio). Questo ti permette dopo di cercare <em>“dammi solo i Transfer da Alice a Bob”</em> senza leggere tutta la storia della blockchain. (Puoi mettere al massimo <strong>3</strong> parametri <code>indexed</code> per evento).</li>
+            <li><strong><code>amount</code> NON ha <code>indexed</code></strong>: finisce nella sezione <strong>data</strong> del log. Costa ancora meno, puoi leggerne il valore (es. <code>100</code>), ma <strong>non puoi</strong> filtrare per importo con <code>queryFilter</code>.</li>
+            <li><strong><code>emit Transfer(msg.sender, to, amount);</code></strong>: è il comando che “spara” effettivamente l'evento nel momento in cui la funzione viene eseguita. <code>msg.sender</code> è sempre l'indirizzo di chi ha firmato e inviato la transazione.</li>
+          </ul>
+
+          <div class="diagram-box">
+            <svg viewBox="0 0 880 230" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ciclo di vita di un Evento in Solidity">
+              <defs>
+                <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="12" y="72" width="170" height="86" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+              <text x="97" y="102" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Chiami la funzione</text>
+              <text x="97" y="124" text-anchor="middle" font-family="monospace" font-size="11" fill="#1d4ed8">transfer(to, 100)</text>
+              <text x="97" y="143" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Parte la transazione (tx)</text>
+
+              <line x1="182" y1="115" x2="228" y2="115" stroke="#475569" stroke-width="2" marker-end="url(#arr1)"/>
+
+              <rect x="232" y="64" width="185" height="102" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+              <text x="324" y="94" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4c1d95">2. Il contratto fa emit</text>
+              <text x="324" y="116" text-anchor="middle" font-family="monospace" font-size="11" fill="#6d28d9">emit Transfer(...)</text>
+              <text x="324" y="137" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Scrive Topic (indexed)</text>
+              <text x="324" y="153" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">+ Data (amount) nel blocco</text>
+
+              <line x1="417" y1="115" x2="463" y2="115" stroke="#475569" stroke-width="2" marker-end="url(#arr1)"/>
+
+              <rect x="467" y="72" width="150" height="86" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+              <text x="542" y="102" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#065f46">3. Blocco minato</text>
+              <text x="542" y="123" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">tx.wait() restituisce</text>
+              <text x="542" y="140" text-anchor="middle" font-family="monospace" font-size="11" fill="#065f46">receipt.logs[]</text>
+
+              <line x1="617" y1="95" x2="668" y2="42" stroke="#475569" stroke-width="2" marker-end="url(#arr1)"/>
+              <line x1="617" y1="115" x2="668" y2="115" stroke="#475569" stroke-width="2" marker-end="url(#arr1)"/>
+              <line x1="617" y1="135" x2="668" y2="188" stroke="#475569" stroke-width="2" marker-end="url(#arr1)"/>
+
+              <rect x="672" y="12" width="196" height="58" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="770" y="34" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#0f172a">6.2/6.3 Leggi subito</text>
+              <text x="770" y="53" text-anchor="middle" font-family="monospace" font-size="11" fill="#2563eb">receipt.logs[0]</text>
+
+              <rect x="672" y="86" width="196" height="58" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="770" y="108" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#0f172a">6.4 Cerca nel passato</text>
+              <text x="770" y="127" text-anchor="middle" font-family="monospace" font-size="11" fill="#7c3aed">c.queryFilter(filter)</text>
+
+              <rect x="672" y="160" width="196" height="58" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="770" y="182" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#0f172a">6.5 Ascolta dal vivo</text>
+              <text x="770" y="201" text-anchor="middle" font-family="monospace" font-size="11" fill="#059669">c.on("Transfer", ...)</text>
+            </svg>
+            <div class="diagram-caption">Schema completo: una singola chiamata in Solidity può essere letta fuori dalla blockchain in 3 modi diversi.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 2: LAB 6.1 - 6.3 -->
+      <section id="lab61-63">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag">Sezioni 6.1 • 6.2 • 6.3</span>
+            <h2>Definire, Emettere e Recuperare un Evento (<code>EventExample</code>)</h2>
+          </div>
+
+          <p>
+            Le sezioni <strong>6.1</strong>, <strong>6.2</strong> e <strong>6.3</strong> del manuale mostrano il ciclo base:
+            prima scrivi il contratto con l'evento (<code>contracts/lab6/EventExample.sol</code>), poi lanci una transazione e leggi il log dalla ricevuta.
+          </p>
+
+          <div class="code-wrap">
+            <div class="code-bar">
+              <span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>contracts/lab6/EventExample.sol</span>
+              <button class="copy-btn" data-copy="sol-61">Copia</button>
+            </div>
+            <pre id="sol-61"><span class="t-com">// SPDX-License-Identifier: MIT</span>
+<span class="t-kw">pragma solidity</span> ^0.8.28;
+
+<span class="t-kw">contract</span> EventExample {
+    <span class="t-com">// 1. Dichiari lo schema della "ricevuta": chi manda, chi riceve, quanto</span>
+    <span class="t-kw">event</span> Transfer(<span class="t-kw">address indexed</span> from, <span class="t-kw">address indexed</span> to, <span class="t-kw">uint</span> amount);
+
+    <span class="t-com">// 2. Funzione pubblica: quando la chiami, emette davvero l'evento</span>
+    <span class="t-kw">function</span> transfer(<span class="t-kw">address</span> to, <span class="t-kw">uint</span> amount) <span class="t-kw">public</span> {
+        <span class="t-kw">emit</span> Transfer(msg.sender, to, amount);
+    }
+}</pre>
+          </div>
+
+          <div class="callout purple">
+            <strong>Cos'è la sezione 6.2 del PDF ("Retrieving Events (A)")?</strong><br/>
+            È un test automatico scritto per <strong>Truffle</strong> (un vecchio framework prima di Hardhat). Controlla con <code>assert.equal</code> che l'evento in <code>tx.logs[0]</code> abbia nome <code>"Transfer"</code>, <code>from == accounts[0]</code>, <code>to == accounts[1]</code>, <code>amount == 100</code>.
+            <em>Piccola curiosità:</em> nel PDF per errore hanno messo <code>pragma solidity ^0.8.0;</code> anche all'inizio di quel file JavaScript! Nel tuo repo l'equivalente moderno in TypeScript è <code>contracts/lab6/RetrieveTest.ts</code>.
+          </div>
+
+          <h3>Il TUO output di console (6.1/6.2/6.3 in <code>Lab6Manual.docx</code>) spiegato riga per riga</h3>
+          <p>
+            Prima dei comandi visibili nello screenshot, nella tua sessione di <code>npm run console</code> hai inizializzato Ethers, preso due account di test da Hardhat e deployato <code>EventExample</code>:
+          </p>
+          <ul>
+            <li><strong>Account #0 (<code>sender</code> / tu)</strong>: <code>0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266</code> (è l'account che firma per default tutte le chiamate!)</li>
+            <li><strong>Account #1 (<code>receiver</code>)</strong>: <code>0x70997970C51812dc3A010C7d01b50e0d17dc79C8</code></li>
+          </ul>
+
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Il tuo Terminale • 6.1/6.2/6.3 (Setup implicito + Comandi dallo screenshot)</span></div>
+            <pre><span class="t-com">// Comandi iniziali (prima dello screenshot):</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const { ethers } = await network.create();</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const [sender, receiver] = await ethers.getSigners();</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const instance = await ethers.deployContract("EventExample");</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await instance.waitForDeployment();</span>
+
+<span class="t-com">// Comandi esatti dal tuo primo screenshot:</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const tx = await instance.transfer(receiver.address, 100);</span>
+<span class="t-out">undefined</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const receipt = await tx.wait();</span>
+<span class="t-out">undefined</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">receipt.logs[0].eventName</span>
+<span class="t-str">'Transfer'</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">receipt.logs[0].args</span>
+<span class="t-out">Proxy [
+  Result(3) [
+    '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+    '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+    100n
+  ],
+  { get: [Function: get] }
+]</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">console.log({ event: receipt.logs[0].eventName, from: receipt.logs[0].args[0], to: receipt.logs[0].args[1], amount: receipt.logs[0].args[2].toString()})</span>
+<span class="t-out">{
+  event: 'Transfer',
+  from: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+  to: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+  amount: '100'
+}</span>
+<span class="t-out">undefined</span></pre>
+          </div>
+
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 1</span>
+                <span class="step-cmd">const tx = await instance.transfer(receiver.address, 100);</span>
+              </div>
+              <div class="step-body">
+                Invia la transazione alla blockchain locale chiamando la funzione <code>transfer</code> sul contratto <code>instance</code>, passando l'indirizzo di <code>receiver</code> e l'importo <code>100</code>.
+                <br/><strong>Perché stampa <code>undefined</code>?</strong> In JavaScript, una dichiarazione di variabile con <code>const ... = ...</code> non ha un valore di ritorno: salva il risultato dentro <code>tx</code> in silenzio.
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 2</span>
+                <span class="step-cmd">const receipt = await tx.wait();</span>
+              </div>
+              <div class="step-body">
+                <code>tx</code> è solo la transazione <em>appena spedita</em> (ancora in attesa di conferma). <code>tx.wait()</code> aspetta che la blockchain la inserisca in un blocco e ti restituisce la <strong>ricevuta (<code>receipt</code>)</strong>, che contiene esito, gas usato e <strong>tutti i log emessi</strong>.
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 3</span>
+                <span class="step-cmd">receipt.logs[0].eventName</span>
+              </div>
+              <div class="step-body">
+                <code>receipt.logs</code> è la lista (array) degli eventi emessi durante quella transazione. Siccome ne hai emesso solo uno, <code>[0]</code> è il primo (e unico) evento. <code>.eventName</code> legge il nome: infatti ti risponde <code>'Transfer'</code>!
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 4</span>
+                <span class="step-cmd">receipt.logs[0].args</span>
+              </div>
+              <div class="step-body">
+                Mostra i <strong>3 argomenti</strong> dell'evento <code>Transfer</code>:
+                <ul>
+                  <li><code>[0]</code> → <code>'0xf39F...2266'</code> (chi ha chiamato, cioè <code>msg.sender</code> / <code>sender</code>)</li>
+                  <li><code>[1]</code> → <code>'0x7099...79C8'</code> (<code>to</code>, cioè <code>receiver</code>)</li>
+                  <li><code>[2]</code> → <code>100n</code> (<code>amount</code>)</li>
+                </ul>
+                <strong>Cos'è quella <code>n</code> finale in <code>100n</code>?</strong> In JavaScript è un <strong>BigInt</strong> (numero intero enorme). I token su Ethereum usano spesso 18 zeri (numeri più grandi di quelli che un normale <code>Number</code> JS può reggere), quindi Ethers v6 mette sempre <code>n</code> alla fine.<br/>
+                <strong>Cos'è <code>Proxy [ Result(3) ... ]</code>?</strong> È un oggetto speciale di Ethers che funziona <em>sia</em> come array (<code>args[0]</code>) <em>sia</em> per nome (<code>args.from</code>).
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 5</span>
+                <span class="step-cmd">console.log({ event: ..., from: ..., to: ..., amount: receipt.logs[0].args[2].toString() })</span>
+              </div>
+              <div class="step-body">
+                Stampa un bel riepilogo pulito. Il metodo <code>.toString()</code> serve proprio a trasformare il BigInt <code>100n</code> in una normale stringa leggibile <code>'100'</code>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 3: LAB 6.4 -->
+      <section id="lab64">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag purple">Sezione 6.4</span>
+            <h2>Filtrare gli Eventi nel Passato + Esploratore Interattivo del Receipt</h2>
+          </div>
+
+          <p>
+            Nella vita reale un contratto fa migliaia di trasferimenti. Non vuoi leggerli tutti: vuoi poter dire alla blockchain <em>“dammi SOLO i trasferimenti da Sender ad Alice”</em>. Questo fa <strong><code>EventFilterExample</code></strong>!
+          </p>
+          <p>
+            Nel tuo test della sezione <strong>6.4</strong> (contratto <code>c</code> all'indirizzo <code>0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0</code>), hai fatto prima un trasferimento di <code>100</code> ad <code>alice</code>, e poi uno di <code>200</code> a <code>bob</code>:
+          </p>
+
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Il tuo Terminale • 6.4 (Filtro su Alice ignorando Bob)</span></div>
+            <pre><span class="t-com">// 1. Fai una seconda transazione verso Bob da 200 (con doppio await!)</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await (await c.transfer(bob.address, 200)).wait();</span>
+<span class="t-out">ContractTransactionReceipt { to: '0x9fE4...', blockNumber: 5, gasUsed: 24112n, status: 1, ... }</span>
+
+<span class="t-com">// 2. Crei il filtro: SOLO da sender verso alice</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const filter = c.filters.Transfer(sender.address, alice.address);</span>
+<span class="t-out">undefined</span>
+
+<span class="t-com">// 3. Chiedi alla blockchain gli eventi che rispettano il filtro</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">const events = await c.queryFilter(filter);</span>
+<span class="t-out">undefined</span>
+
+<span class="t-com">// 4. Quanti ne ha trovati? Solo 1! Quello di Bob (200) è stato filtrato via!</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">events.length</span>
+<span class="t-num">1</span>
+
+<span class="t-prompt">&gt;</span> <span class="t-cmd">events[0].args</span>
+<span class="t-out">Proxy [ Result(3) [ '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', 100n ], ... ]</span></pre>
+          </div>
+
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Trucco JS</span>
+                <span class="step-cmd">await (await c.transfer(bob.address, 200)).wait();</span>
+              </div>
+              <div class="step-body">
+                Perché ci sono <strong>due <code>await</code></strong> uno dentro l'altro? È semplicemente la versione compatta dei Passi 1 e 2 visti prima!
+                <ul>
+                  <li>L'<code>await</code> <strong>interno</strong> <code>(await c.transfer(...))</code> manda la transazione e restituisce <code>tx</code>.</li>
+                  <li>Poi <code>.wait()</code> aspetta la conferma e restituisce una Promise.</li>
+                  <li>L'<code>await</code> <strong>esterno</strong> aspetta quella ricevuta e, siccome non c'è <code>const ... =</code>, la stampa subito sullo schermo!</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Filtro</span>
+                <span class="step-cmd">const filter = c.filters.Transfer(sender.address, alice.address);</span>
+              </div>
+              <div class="step-body">
+                Prepara la “lente d'ingrandimento” cercando l'evento <code>Transfer</code> con primo campo <code>from = sender</code> e secondo campo <code>to = alice</code>. <strong>Funziona solo perché entrambi sono marcati <code>indexed</code></strong> nel contratto <code>EventFilterExample.sol</code>!
+                (Se volessi cercare tutti quelli verso Alice da chiunque, potresti passare <code>null</code> come primo argomento: <code>c.filters.Transfer(null, alice.address)</code>).
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Ricerca</span>
+                <span class="step-cmd">const events = await c.queryFilter(filter);</span>
+              </div>
+              <div class="step-body">
+                Interroga la storia passata della blockchain cercando tutti i log che combaciano con <code>filter</code>. Nel file <code>contracts/lab6/EventFilterTest.ts</code> trovi la stessa identica chiamata con in più l'intervallo di blocchi (<code>receipt.blockNumber, receipt.blockNumber</code>) per cercare solo in un blocco preciso.
+              </div>
+            </div>
+          </div>
+
+          <h3>Esploratore Interattivo: cosa significano tutti i campi di <code>ContractTransactionReceipt</code>?</h3>
+          <p>
+            Negli output 6.4, 6.5 e OwnedToken ti esce sempre questo blocco gigante di dati. <strong>Clicca su una qualsiasi riga qui sotto</strong> per leggere a cosa serve (e usa i due pulsanti per confrontare una chiamata a funzione con un deploy di contratto!):
+          </p>
+
+          <div class="receipt-controls">
+            <button class="tab-btn active" id="btnTransferReceipt" type="button">Ricevuta di Transfer (6.4 — blocco #5)</button>
+            <button class="tab-btn" id="btnDeployReceipt" type="button">Ricevuta di Deploy (OwnedToken — blocco #8)</button>
+          </div>
+
+          <div class="receipt-explorer">
+            <div class="receipt-fields" id="receiptFields"></div>
+            <div class="receipt-detail" id="receiptDetail">
+              <h4 id="detailKey">Clicca un campo a sinistra</h4>
+              <p id="detailDesc" style="margin:0;">Ogni riga della ricevuta racconta un pezzo preciso di ciò che è successo sulla blockchain.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 4: LAB 6.5 -->
+      <section id="lab65">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag green">Sezione 6.5</span>
+            <h2>Sottoscriversi agli Eventi in Tempo Reale (<code>EventSubscriptionExample</code>)</h2>
+          </div>
+
+          <p>
+            Qual è la differenza tra <strong>6.4 (<code>queryFilter</code>)</strong> e <strong>6.5 (<code>c.on</code>)</strong>?
+          </p>
+          <div class="two-col">
+            <div class="mini-box">
+              <h4><code>queryFilter(filter)</code> — Guardi il passato</h4>
+              <p style="margin:0;">È come cercare negli archivi storici: chiedi <em>“cos'è successo finora?”</em> e ti restituisce una lista.</p>
+            </div>
+            <div class="mini-box">
+              <h4><code>c.on("Transfer", ...)</code> — Ascolti il futuro</h4>
+              <p style="margin:0;">È come attivare le notifiche push sul telefono: lasci il programma in ascolto e, <strong>ogni volta che parte un Transfer nuovo</strong>, scatta la tua funzione in automatico.</p>
+            </div>
+          </div>
+
+          <h3>Il TUO output di console (6.5 in <code>Lab6Manual.docx</code>)</h3>
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Il tuo Terminale • 6.5 (Listener attivo + scatto automatico)</span></div>
+            <pre><span class="t-com">// 1. Attivi l'ascoltatore sull'evento "Transfer"</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await c.on("Transfer", (from, to, amount) =&gt; console.log("Transfer ricevuto:", { from, to, amount: amount.toString() }));</span>
+<span class="t-out">Proxy [ BaseContract { target: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707', ... } ]</span>
+
+<span class="t-com">// 2. Invii una transazione da 250</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await (await c.transfer(receiver.address, 250)).wait();</span>
+<span class="t-out">ContractTransactionReceipt { blockNumber: 7, gasUsed: 24124n, status: 1, ... }</span>
+
+<span class="t-com">// 3. MAGIA! Subito dopo la ricevuta, il listener si accorge dell'evento e stampa da solo:</span>
+<span class="t-out">Transfer ricevuto: {
+  from: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+  to: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+  amount: '250'
+}</span>
+
+<span class="t-com">// 4. Spegni l'ascoltatore per fare pulizia</span>
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await c.removeAllListeners();</span>
+<span class="t-out">Proxy [ BaseContract { target: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707', ... } ]</span></pre>
+          </div>
+
+          <ul>
+            <li><strong>Cos'è <code>(from, to, amount) =&gt; console.log(...)</code>?</strong> È una <em>callback</em> (una arrow function): una mini-funzione che NON viene eseguita subito, ma viene “parcheggiata” dentro Ethers e chiamata automaticamente solo quando arriva l'evento <code>"Transfer"</code>.</li>
+            <li><strong>Perché quando lanci <code>c.on(...)</code> o <code>c.removeAllListeners()</code> stampa tutto quel blocco <code>Proxy [ BaseContract ... ]</code>?</strong> Perché in Ethers questi metodi restituiscono l'oggetto stesso del contratto (per permettere di concatenarli, es. <code>c.on(...).on(...)</code>), e la console interattiva di Node stampa sempre ciò che un comando restituisce!</li>
+            <li><strong>Perché fare <code>await c.removeAllListeners()</code> alla fine?</strong> Perché se lasci dei listener accesi senza rimuoverli, possono continuare a consumare memoria, stampare duplicati se registri altri listener, o impedire a uno script Node.js di chiudersi.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SEZIONE 5: MORE ABOUT EVENTS (i) e (ii) -->
+      <section id="more-events">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag amber">Pagine 3–4 del PDF + Ultimo screenshot</span>
+            <h2>"Some more about events (i) &amp; (ii)": <code>OwnedToken</code> e <code>require</code></h2>
+          </div>
+
+          <div class="callout tip">
+            <strong>Attenzione a una cosa nel tuo file Word!</strong><br/>
+            L'ultimo screenshot in fondo a <code>Lab6Manual.docx</code> (quello con <code>token.getAddress()</code>, <code>token.owner()</code>, <code>decodeBytes32String</code> e <code>deploymentTransaction().wait()</code>) si trova visivamente sotto <code>6.5</code>, ma in realtà è l'output che hai ottenuto testando <strong><code>OwnedToken</code></strong> (pagina 3 del PDF, file <code>contracts/lab6/OwnedToken.sol</code>)!
+          </div>
+
+          <h3>Parte (i): <code>OwnedToken</code> e <code>TokenCreator</code> (due contratti nello stesso file)</h3>
+          <p>
+            Nota curiosa: nonostante il titolo del PDF dica <em>"Some more about events (i)"</em>, questo esempio in realtà <strong>non ha nessun <code>event</code></strong>! Serve invece a mostrare tre concetti utilissimi:
+          </p>
+          <ol>
+            <li><strong>Un contratto che crea/chiama un altro contratto:</strong> <code>TokenCreator</code> può creare un nuovo <code>OwnedToken</code> con <code>new OwnedToken(name)</code>, cambiarne il nome con <code>changeName</code>, oppure validare un trasferimento tramite <code>isTokenTransferOK</code>.</li>
+            <li><strong>Controllo di chi chiama (<code>msg.sender</code>):</strong>
+              <ul>
+                <li><code>changeName</code> controlla <code>if (msg.sender == address(creator))</code>: solo chi lo ha creato può rinominarlo.</li>
+                <li><code>transfer(address newOwner)</code> controlla <code>if (msg.sender != owner) return;</code> e poi chiede conferma al creatore chiamando <code>creator.isTokenTransferOK(owner, newOwner)</code>.</li>
+              </ul>
+            </li>
+            <li><strong>Condizione crittografica arbitraria con <code>keccak256</code>:</strong> <code>isTokenTransferOK</code> calcola l'hash di <code>currentOwner</code> + <code>newOwner</code> e controlla se il primo byte è uguale a <code>0x7f</code> (succede per pura combinazione solo 1 volta su 256 — è solo un esempio didattico di regola personalizzata!).</li>
+          </ol>
+
+          <h3>Cos'è quel numero esadecimale lunghissimo <code>bytes32</code>?</h3>
+          <p>
+            Su Solidity le normali <code>string</code> costano di più perché hanno lunghezza variabile. Per risparmiare gas sui nomi corti si usa spesso <strong><code>bytes32</code></strong>: una “scatola” fissa da esattamente <strong>32 byte</strong> (64 caratteri esadecimali dopo <code>0x</code>).
+            Ecco come <code>0x546f6b656e4e616d650000...</code> diventa la parola <strong><code>"TokenName"</code></strong>:
+          </p>
+
+          <div class="bytes-grid" id="bytesGrid"></div>
+
+          <h3>Il TUO output su <code>OwnedToken</code> spiegato comando per comando</h3>
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Il tuo Terminale • Ultimo screenshot (OwnedToken)</span></div>
+            <pre><span class="t-prompt">&gt;</span> <span class="t-cmd">await token.getAddress()</span>
+<span class="t-str">'0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'</span>
+
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await token.owner()</span>
+<span class="t-str">'0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'</span>
+
+<span class="t-prompt">&gt;</span> <span class="t-cmd">ethers.decodeBytes32String(await token.name())</span>
+<span class="t-str">'TokenName'</span>
+
+<span class="t-prompt">&gt;</span> <span class="t-cmd">await token.deploymentTransaction().wait()</span>
+<span class="t-out">ContractTransactionReceipt {
+  to: null,
+  from: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+  contractAddress: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
+  blockNumber: 8,
+  logsBloom: '0x0000...0000',
+  gasUsed: 378711n,
+  status: 1
+}</span></pre>
+          </div>
+
+          <ul>
+            <li><strong><code>await token.getAddress()</code></strong>: ti dice l'indirizzo unico dove vive il contratto appena creato sulla blockchain (<code>0xa513...C853</code>).</li>
+            <li><strong><code>await token.owner()</code></strong>: funziona perché nel tuo file <code>contracts/lab6/OwnedToken.sol</code> hai giustamente aggiunto la parola <code>public</code> davanti a <code>owner</code> e <code>name</code> (nel PDF non c'era!), facendo generare automaticamente a Solidity le funzioni per leggerli.</li>
+            <li><strong><code>ethers.decodeBytes32String(await token.name())</code></strong>: legge il valore esadecimale grezzo <code>0x546f6b...</code> dal contratto e lo ritraduce in testo umano: <code>'TokenName'</code>!</li>
+            <li><strong><code>await token.deploymentTransaction().wait()</code></strong>: recupera la ricevuta della transazione con cui hai pubblicato il contratto. Nota due differenze enormi rispetto a una normale chiamata (le vedi anche nell'Esploratore sopra!):
+              <ol>
+                <li><strong><code>to: null</code></strong> e <strong><code>contractAddress: '0xa513...'</code></strong> — quando crei un nuovo contratto, non stai scrivendo a un destinatario esistente, ma generando un nuovo indirizzo!</li>
+                <li><strong><code>logsBloom: '0x0000...0000'</code></strong> (tutti zeri!) — perché <code>OwnedToken</code> non ha emesso nessun evento durante il deploy, mentre <code>EventFilterExample</code> nel blocco #5 aveva dei bit accesi nel <code>logsBloom</code>!</li>
+              </ol>
+            </li>
+          </ul>
+
+          <div class="callout info">
+            <strong>Dettaglio interessante su <code>OwnedToken</code>:</strong> se lo deployi direttamente dal tuo account (come hai fatto qui), <code>creator</code> diventa il tuo indirizzo utente (<code>0xf39F...</code>), non un contratto <code>TokenCreator</code>. Quindi finché lo osservi con <code>owner()</code> e <code>name()</code> funziona benissimo, mentre se chiamassi <code>transfer()</code> fallirebbe perché un account utente non ha la funzione <code>isTokenTransferOK()</code>! Per usare anche <code>transfer()</code> bisogna prima deployare <code>TokenCreator</code> e fargli creare il token con <code>createToken(...)</code>.
+          </div>
+
+          <h3>Parte (ii): <code>EventExample</code> migliorato con <code>require</code> (PDF pag. 4)</h3>
+          <p>
+            A pagina 4 il PDF riprende <code>EventExample</code> e aggiunge due “buttafuori” all'ingresso della funzione <code>transfer</code>:
+          </p>
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Solidity • Controlli preventivi con require</span></div>
+            <pre><span class="t-kw">function</span> transfer(<span class="t-kw">address</span> to, <span class="t-kw">uint</span> amount) <span class="t-kw">public</span> {
+    <span class="t-kw">require</span>(to != <span class="t-kw">address</span>(0), <span class="t-str">"Recipient address cannot be zero"</span>);
+    <span class="t-kw">require</span>(amount &gt; 0, <span class="t-str">"Amount must be greater than zero"</span>);
+
+    <span class="t-kw">emit</span> Transfer(msg.sender, to, amount);
+}</pre>
+          </div>
+          <ul>
+            <li><strong><code>require(to != address(0), ...)</code></strong>: impedisce di spedire token all'indirizzo zero (<code>0x0000000000000000000000000000000000000000</code>), che è un “buco nero” da cui nessuno potrà mai recuperarli.</li>
+            <li><strong><code>require(amount &gt; 0, ...)</code></strong>: evita transazioni inutili da 0 token.</li>
+            <li><strong>Cosa succede se una condizione è falsa?</strong> La transazione fa <strong>revert</strong>: si blocca immediatamente con il messaggio d'errore, annulla qualsiasi modifica e <strong>NON emette l'evento</strong>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SEZIONE 6: MODIFIER, PAYABLE & TRANSFER -->
+      <section id="modifier-payable">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag">Pagine 5–6 del PDF</span>
+            <h2><code>Modifier</code>, <code>Payable</code> (A &amp; B) e <code>Transfer</code> di Ether veri</h2>
+          </div>
+
+          <h3>1. <code>Modifier</code> (<code>AccessControlExample</code>) — Il controllo riutilizzabile</h3>
+          <p>
+            Invece di riscrivere <code>require(msg.sender == owner, ...)</code> in dieci funzioni diverse, in Solidity puoi creare un <strong><code>modifier</code></strong>: una regola che si “aggancia” al nome della funzione.
+          </p>
+          <div class="code-wrap">
+            <div class="code-bar"><span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>Solidity • Come funziona il segnaposto _;</span></div>
+            <pre><span class="t-kw">modifier</span> onlyOwner() {
+    <span class="t-kw">require</span>(msg.sender == owner, <span class="t-str">"Only the owner can call this function"</span>);
+    _; <span class="t-com">// &lt;-- QUI dentro viene incollato il codice della funzione che usa onlyOwner!</span>
+}
+
+<span class="t-kw">constructor</span>() {
+    owner = msg.sender; <span class="t-com">// Chi fa il deploy diventa il proprietario</span>
+}
+
+<span class="t-kw">function</span> setData(<span class="t-kw">uint</span> _data) <span class="t-kw">public</span> onlyOwner {
+    data = _data; <span class="t-com">// Viene eseguito SOLO se il require in onlyOwner passa</span>
+}
+
+<span class="t-kw">function</span> getData() <span class="t-kw">public view returns</span> (<span class="t-kw">uint</span>) {
+    <span class="t-kw">return</span> data; <span class="t-com">// Sola lettura (view): chiunque può leggere gratuitamente</span>
+}</pre>
+          </div>
+          <p>
+            Quel misterioso <strong><code>_;</code></strong> significa letteralmente: <em>“se il controllo sopra è andato bene, esegui adesso il corpo della funzione”</em>.
+          </p>
+
+          <h3>2. Cosa significano i colori nei commenti del PDF (Remix IDE)?</h3>
+          <div class="remix-pills">
+            <span class="r-pill red">Rosso = payable (può ricevere Ether)</span>
+            <span class="r-pill orange">Giallo/Arancio = scrittura stato (costa gas)</span>
+            <span class="r-pill blue">Blu = view / pure (sola lettura, gratis)</span>
+          </div>
+
+          <h3>3. <code>Payable A</code> vs <code>Payable B</code> (pagine 5 e 6)</h3>
+          <p>
+            Per impostazione predefinita, se provi a mandare Ether (ETH) a una funzione Solidity, la blockchain la rifiuta. Aggiungere la parola chiave <strong><code>payable</code></strong> apre il “salvadanaio” della funzione.
+          </p>
+
+          <div class="two-col">
+            <div class="mini-box">
+              <h4>Payable A — Salvadanaio unico del contratto</h4>
+              <p><code>address public owner = 0x5B38...;</code> (indirizzo fisso preso da Remix!) e <code>function deposit() public payable onlyOwner {}</code>.</p>
+              <p style="margin:0;">
+                <strong>Perché le parentesi graffe <code>{}</code> sono vuote?</strong> Perché il semplice fatto che la funzione sia <code>payable</code> fa entrare automaticamente gli ETH inviati nella cassa del contratto! Con <code>checkBalance()</code> leggi <code>address(this).balance</code> (il saldo del contratto stesso).
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>Payable B — Registro per singolo destinatario</h4>
+              <p>Usa <code>mapping(address =&gt; uint) senderAddress;</code> e <code>depositToOwner(address owneraddress) public payable { senderAddress[owneraddress] += msg.value; }</code>.</p>
+              <p style="margin:0;">
+                <strong>Cos'è <code>msg.value</code>?</strong> È la quantità esatta di Ether (in <strong>Wei</strong>) allegata alla transazione. Attenzione: gli ETH fisicamente entrano sempre nella cassa del contratto, mentre il <code>mapping</code> annota sul quaderno contabile a quale <code>owneraddress</code> appartiene quel deposito!
+              </p>
+            </div>
+          </div>
+
+          <h3>4. <code>Transfer</code> (<code>transferExample</code>, pagina 6) — Spedire Ether dal contratto a un utente</h3>
+          <p>
+            Dopo aver caricato il contratto con <code>deposit()</code>, questo contratto permette di <strong>prelevare</strong> ETH dal contratto e mandarli a qualsiasi indirizzo <code>_to</code>:
+          </p>
+          <ul>
+            <li><strong><code>address payable _receive;</code></strong>: anche una variabile indirizzo deve essere dichiarata <code>payable</code> se vuoi poterle inviare Ether!</li>
+            <li><strong><code>require(address(this).balance &gt;= amount, ...);</code></strong>: controlla che il contratto abbia abbastanza soldi prima di pagare (nel PDF il messaggio di errore ha un refuso simpatico: scrive <code>"enough balance in your wallet "</code> invece di <code>"not enough balance"</code>).</li>
+            <li><strong><code>_to.transfer(amount);</code></strong>: trasferisce davvero i Wei dalla cassa del contratto al portafoglio di <code>_to</code>.</li>
+            <li><strong><code>checkSenderBalance()</code> vs <code>checkReceiverBalance()</code></strong>: leggono rispettivamente <code>address(this).balance</code> (quanto resta nel contratto) e <code>_receive.balance</code> (quanto ha nel portafoglio l'ultimo destinatario).</li>
+          </ul>
+
+          <div class="callout warn">
+            <strong>Attenzione a Wei vs Ether!</strong><br/>
+            La blockchain non usa i decimali (niente virgola). Quindi <strong><code>1 ETH = 1.000.000.000.000.000.000 Wei</code> (1 seguito da 18 zeri, cioè 10<sup>18</sup> Wei)</strong>. Ecco perché il commento del PDF ti ricorda che se vuoi inviare 1 ETH devi scrivere <code>1000000000000000000</code>!
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 7: TASK ERC-20 & INTERFACCE -->
+      <section id="erc20-interface">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag purple">Pagina 7 del PDF</span>
+            <h2>Task: Token ERC-20, MetaMask e Interfacce (<code>IERC20.sol</code>)</h2>
+          </div>
+
+          <p>
+            Nell'ultima pagina ci sono due idee che lavorano insieme:
+          </p>
+          <ol>
+            <li><strong>Creare e importare un token ERC-20 in MetaMask:</strong> dopo aver deployato il contratto del token (<code>ERC-20-Token.sol</code>) usando MetaMask su una rete di test, prendi l'indirizzo del contratto deployato e fai <em>“Import Token”</em> su MetaMask così il wallet ti mostra nome, simbolo e saldo del tuo token personale.</li>
+            <li><strong>Usare un'<code>interface</code> per far parlare un altro contratto con quel token:</strong> senza bisogno di ricopiare tutto il codice del token dentro il nuovo contratto!</li>
+          </ol>
+
+          <div class="callout info">
+            <strong>Analogia del Telecomando:</strong><br/>
+            Un'<strong><code>interface</code></strong> in Solidity (<code>IERC20.sol</code>) è esattamente come un telecomando della TV: ha solo i <strong>tasti</strong> (i nomi delle funzioni e i parametri, es. <code>transfer(address to, uint256 value) external;</code>), senza tutta l'elettronica dentro (niente corpo <code>{ ... }</code>). Quando gli dai l'indirizzo del contratto vero (<code>ERC20Interface(_tokenAddress)</code>), il tuo secondo contratto può “premere i tasti” sul primo!
+          </div>
+
+          <div class="diagram-box">
+            <svg viewBox="0 0 860 190" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flusso chiamata tramite interfaccia ERC20">
+              <defs>
+                <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="16" y="48" width="160" height="88" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+              <text x="96" y="78" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Utente (Tu)</text>
+              <text x="96" y="100" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Chiama</text>
+              <text x="96" y="119" text-anchor="middle" font-family="monospace" font-size="11" fill="#1d4ed8">sellToken(to, 50)</text>
+
+              <line x1="176" y1="92" x2="232" y2="92" stroke="#475569" stroke-width="2" marker-end="url(#arr2)"/>
+
+              <rect x="236" y="34" width="215" height="116" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+              <text x="343" y="60" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4c1d95">Contratto 2: xzy</text>
+              <text x="343" y="78" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#6d28d9">(ERC20-InterfaceCall.sol)</text>
+              <text x="343" y="102" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Conosce l'indirizzo del token</text>
+              <text x="343" y="122" text-anchor="middle" font-family="monospace" font-size="11" fill="#6d28d9">token.transfer(_to, _amount)</text>
+
+              <line x1="451" y1="92" x2="508" y2="92" stroke="#475569" stroke-width="2" marker-end="url(#arr2)"/>
+              <rect x="462" y="54" width="38" height="22" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+              <text x="481" y="69" text-anchor="middle" font-family="monospace" font-size="9.5" font-weight="700" fill="#92400e">ABI</text>
+
+              <rect x="512" y="34" width="330" height="116" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+              <text x="677" y="60" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#065f46">Contratto 1: ERC-20-Token</text>
+              <text x="677" y="79" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">(già deployato all'indirizzo _tokenAddress)</text>
+              <text x="677" y="103" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Esegue davvero la logica di transfer()</text>
+              <text x="677" y="122" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#065f46">Nota: qui dentro msg.sender = contratto xzy!</text>
+            </svg>
+            <div class="diagram-caption"><code>ERC20Interface</code> in <code>IERC20.sol</code> fa da ponte tra il nuovo contratto <code>xzy</code> e il token già esistente.</div>
+          </div>
+
+          <h3>Cosa c'è nei due file di pagina 7</h3>
+          <ul>
+            <li><strong><code>IERC20.sol</code> (<code>interface ERC20Interface</code>)</strong>: dichiara le 5 firme delle funzioni implementate nel token:
+              <code>transfer</code> (sposta token), <code>approve</code> (autorizza qualcuno a spendere per te), <code>getAllowance</code> (legge quanto è autorizzato), <code>minting</code> (crea nuovi token), <code>burning</code> (distrugge token). Tutte marcate <code>external</code> (obbligatorio nelle interfacce!).</li>
+            <li><strong><code>ERC20-InterfaceCall.sol</code> (<code>contract xzy</code>)</strong>:
+              <ul>
+                <li><code>import "./IERC20.sol";</code> importa il “telecomando”.</li>
+                <li><code>constructor(address _tokenAddress)</code> riceve l'indirizzo del contratto token già deployato e lo collega: <code>token = ERC20Interface(_tokenAddress);</code>.</li>
+                <li><code>sellToken(address _to, uint _amount)</code> chiama <code>token.transfer(_to, _amount);</code> per eseguire il trasferimento sull'altro contratto.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SEZIONE 8: DIZIONARIO COMPLETO COMANDI CONSOLE -->
+      <section id="dizionario">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag green">Riferimento Rapido</span>
+            <h2>Dizionario Completo di TUTTI i Comandi della Console</h2>
+          </div>
+
+          <p>
+            Cerca qualsiasi comando che hai usato nella console Hardhat (o nei comandi di setup) oppure filtra per argomento. In più, tre regole base di JavaScript nella console:
+          </p>
+          <ul>
+            <li><strong><code>const x = ...</code></strong>: salva un risultato in una scatola chiamata <code>x</code> (la console stampa <code>undefined</code> ma è normale!).</li>
+            <li><strong><code>await ...</code></strong>: dice <em>“aspetta che la blockchain finisca questa operazione prima di passare alla riga dopo”</em>.</li>
+            <li><strong><code>() =&gt; ...</code></strong>: è una funzione compatta (“arrow function”) che passiamo a metodi come <code>c.on(...)</code>.</li>
+          </ul>
+
+          <div class="glossary-toolbar">
+            <input type="search" id="glossarySearch" class="search-input" placeholder="Cerca comando o parola chiave (es. wait, queryFilter, BigInt, deploy, removeAllListeners)..." />
+            <div class="filter-pills" id="filterPills">
+              <button class="filter-pill active" data-cat="all" type="button">Tutti</button>
+              <button class="filter-pill" data-cat="setup" type="button">Setup Hardhat</button>
+              <button class="filter-pill" data-cat="eventi" type="button">Eventi &amp; Log</button>
+              <button class="filter-pill" data-cat="filtri" type="button">Filtri &amp; Listener</button>
+              <button class="filter-pill" data-cat="owned" type="button">OwnedToken &amp; Deploy</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Comando</th>
+                  <th>Categoria</th>
+                  <th>Spiegazione semplice + Cosa stampa</th>
+                </tr>
+              </thead>
+              <tbody id="glossaryBody"></tbody>
+            </table>
+          </div>
+          <p id="glossaryEmpty" style="display:none; text-align:center; padding:16px; color:var(--text-soft);">Nessun comando trovato con questo filtro.</p>
+        </div>
+      </section>
+
+      <!-- SEZIONE 9: MINI-QUIZ -->
+      <section id="quiz">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag amber">Verifica in 1 minuto</span>
+            <h2>Mini-Quiz di Autoverifica (5 domande)</h2>
+          </div>
+          <p>Clicca la risposta che ritieni giusta per vedere subito se hai colto i punti chiave di Lab 6.</p>
+
+          <div id="quizContainer"></div>
+
+          <div class="quiz-score-bar">
+            <span id="quizScoreText">Risposte corrette: 0 / 5</span>
+            <button class="tab-btn" id="quizResetBtn" type="button">Ricomincia Quiz</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      // 1. Copy buttons
+      document.querySelectorAll('.copy-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var targetId = btn.getAttribute('data-copy');
+          var el = document.getElementById(targetId);
+          if (!el) return;
+          var text = el.textContent || '';
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              var old = btn.textContent;
+              btn.textContent = 'Copiato!';
+              setTimeout(function () { btn.textContent = old; }, 1400);
+            });
+          }
+        });
+      });
+
+      // 2. Bytes32 visual breakdown for "TokenName"
+      var bytesData = [
+        ['54', 'T'], ['6f', 'o'], ['6b', 'k'], ['65', 'e'], ['6e', 'n'],
+        ['4e', 'N'], ['61', 'a'], ['6d', 'm'], ['65', 'e']
+      ];
+      var bytesGrid = document.getElementById('bytesGrid');
+      if (bytesGrid) {
+        bytesData.forEach(function (pair) {
+          var cell = document.createElement('div');
+          cell.className = 'byte-cell';
+          cell.innerHTML = '<div class="byte-hex">0x' + pair[0] + '</div><div class="byte-char">' + pair[1] + '</div>';
+          bytesGrid.appendChild(cell);
+        });
+        var pad = document.createElement('div');
+        pad.className = 'byte-cell pad';
+        pad.innerHTML = '<div class="byte-hex">23 × 0x00</div><div class="byte-char">… padding fino a 32 byte</div>';
+        bytesGrid.appendChild(pad);
+      }
+
+      // 3. Interactive ContractTransactionReceipt Explorer
+      var transferReceiptData = [
+        { k: 'to', v: "'0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'", t: 'str', d: "L'indirizzo dello smart contract che hai chiamato (in 6.4 è EventFilterExample). È valorizzato perché stai interagendo con un contratto che esiste già." },
+        { k: 'from', v: "'0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'", t: 'str', d: "Il tuo account mittente (Account #0 di Hardhat), quello che ha firmato la transazione e pagato il gas." },
+        { k: 'contractAddress', v: 'null', t: 'null', d: "È null perché NON hai creato un nuovo contratto: hai solo chiamato una funzione (transfer) su uno già deployato." },
+        { k: 'hash', v: "'0x75fe6864...937364b'", t: 'str', d: "L'impronta digitale unica (ID) di questa transazione. Su Etherscan si usa questo codice per ritrovarla." },
+        { k: 'index', v: '0', t: 'num', d: "La posizione della transazione dentro al blocco (0 = è la prima transazione di quel blocco)." },
+        { k: 'blockHash', v: "'0x3db5b760...8d56ac5'", t: 'str', d: "L'identificativo crittografico univoco del blocco che contiene questa transazione." },
+        { k: 'blockNumber', v: '5', t: 'num', d: "Il numero progressivo del blocco in cui la transazione è stata minata/confermata sulla tua blockchain locale." },
+        { k: 'logsBloom', v: "'0x0000...0402...0100...0400...'", t: 'str', d: "Un indice compatto (Bloom filter) che riassume quali eventi/topics ci sono in questa transazione. Nota che qui NON è tutto zero perché è stato emesso l'evento Transfer!" },
+        { k: 'gasUsed', v: '24112n', t: 'num', d: "La quantità esatta di gas consumata per eseguire transfer() ed emettere il log (24.112 unità, tipo BigInt con la n finale)." },
+        { k: 'cumulativeGasUsed', v: '24112n', t: 'num', d: "Gas totale consumato nel blocco fino a questa transazione (uguale a gasUsed perché index è 0)." },
+        { k: 'gasPrice', v: '650269849n', t: 'num', d: "Il prezzo pagato per ogni singola unità di gas (in Wei). Moltiplicando gasUsed × gasPrice ottieni il costo totale della transazione." },
+        { k: 'type', v: '2', t: 'num', d: "Tipo di transazione Ethereum EIP-1559 (lo standard moderno introdotto col fork London)." },
+        { k: 'status', v: '1', t: 'num', d: "1 significa SUCCESSO! Se fosse 0 vorrebbe dire che la transazione è fallita (es. un require ha fatto revert)." }
+      ];
+
+      var deployReceiptData = [
+        { k: 'to', v: 'null', t: 'null', d: "Nel deploy di un contratto è SEMPRE null! Perché non stai mandando la transazione a un indirizzo esistente, stai creando un contratto nuovo dal nulla." },
+        { k: 'from', v: "'0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'", t: 'str', d: "Il tuo account che ha deployato OwnedToken (e che nel constructor diventa owner = msg.sender)." },
+        { k: 'contractAddress', v: "'0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'", t: 'str', d: "ECCO la grande differenza col Transfer: qui è valorizzato! È l'indirizzo appena assegnato dalla blockchain al tuo nuovo contratto OwnedToken." },
+        { k: 'hash', v: "'0x6793530e...9ecd5b20'", t: 'str', d: "L'hash univoco della transazione di creazione del contratto." },
+        { k: 'index', v: '0', t: 'num', d: "Prima transazione nel blocco #8." },
+        { k: 'blockHash', v: "'0x4afa4c0d...6cbd2e6'", t: 'str', d: "L'hash crittografico del blocco #8." },
+        { k: 'blockNumber', v: '8', t: 'num', d: "Numero del blocco locale in cui il deploy di OwnedToken è stato registrato." },
+        { k: 'logsBloom', v: "'0x0000000000...0000000000'", t: 'str', d: "TUTTI ZERI! Perché il constructor di OwnedToken non emette nessun event. È la prova visiva che non ci sono log!" },
+        { k: 'gasUsed', v: '378711n', t: 'num', d: "378.711 unità di gas! Nota quanto costa molto di più (circa 15x rispetto a 24.112n!) perché deve salvare tutto il codice del contratto sulla blockchain." },
+        { k: 'cumulativeGasUsed', v: '378711n', t: 'num', d: "Uguale a gasUsed essendo l'unica transazione del blocco #8." },
+        { k: 'gasPrice', v: '436055525n', t: 'num', d: "Prezzo per unità di gas (in Wei) al momento del blocco #8." },
+        { k: 'type', v: '2', t: 'num', d: "Transazione EIP-1559 moderna." },
+        { k: 'status', v: '1', t: 'num', d: "1 = Deploy riuscito perfettamente!" }
+      ];
+
+      var fieldsContainer = document.getElementById('receiptFields');
+      var detailKeyEl = document.getElementById('detailKey');
+      var detailDescEl = document.getElementById('detailDesc');
+      var btnTransferReceipt = document.getElementById('btnTransferReceipt');
+      var btnDeployReceipt = document.getElementById('btnDeployReceipt');
+
+      function renderReceipt(list, defaultIdx) {
+        if (!fieldsContainer) return;
+        fieldsContainer.innerHTML = '';
+        list.forEach(function (item, idx) {
+          var row = document.createElement('div');
+          row.className = 'r-row' + (idx === defaultIdx ? ' selected' : '');
+          var valClass = item.t === 'str' ? 'r-val-str' : (item.t === 'num' ? 'r-val-num' : 'r-val-null');
+          row.innerHTML = '<span class="r-key">' + item.k + ':</span><span class="' + valClass + '">' + item.v + '</span>';
+          row.addEventListener('click', function () {
+            fieldsContainer.querySelectorAll('.r-row').forEach(function (r) { r.classList.remove('selected'); });
+            row.classList.add('selected');
+            detailKeyEl.textContent = item.k + ': ' + item.v;
+            detailDescEl.textContent = item.d;
+          });
+          fieldsContainer.appendChild(row);
+          if (idx === defaultIdx) {
+            detailKeyEl.textContent = item.k + ': ' + item.v;
+            detailDescEl.textContent = item.d;
+          }
+        });
+      }
+
+      if (btnTransferReceipt && btnDeployReceipt) {
+        btnTransferReceipt.addEventListener('click', function () {
+          btnTransferReceipt.classList.add('active');
+          btnDeployReceipt.classList.remove('active');
+          renderReceipt(transferReceiptData, 7);
+        });
+        btnDeployReceipt.addEventListener('click', function () {
+          btnDeployReceipt.classList.add('active');
+          btnTransferReceipt.classList.remove('active');
+          renderReceipt(deployReceiptData, 2);
+        });
+        renderReceipt(transferReceiptData, 7);
+      }
+
+      // 4. Searchable Console Commands Glossary
+      var commandsData = [
+        {
+          cmd: 'npm run node',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Avvia la blockchain locale sul tuo computer (127.0.0.1:8545, Chain ID 31337) con 20 account pieni di ETH finti. Va tenuto aperto in un terminale.'
+        },
+        {
+          cmd: 'npm run compile',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Compila tutti i file .sol nella cartella contracts/ usando Solidity 0.8.28 e genera gli artifacts necessari a deployarli.'
+        },
+        {
+          cmd: 'npm run console',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Apre una shell interattiva JavaScript connessa al tuo nodo locale Hardhat, dove puoi scrivere comandi dal vivo.'
+        },
+        {
+          cmd: 'const { ethers } = await network.create();',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Carica la libreria Ethers.js v6 connessa alla rete attiva (negli script .ts del repo vedrai network.getOrCreate(), stessa cosa).'
+        },
+        {
+          cmd: 'const [sender, receiver] = await ethers.getSigners();',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Prende i primi due portafogli di test generati da Hardhat (#0 = 0xf39F...2266, #1 = 0x7099...79C8). Nei tuoi test 6.4 hai anche aggiunto un terzo signer bob.'
+        },
+        {
+          cmd: 'const instance = await ethers.deployContract("EventExample");',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Pubblica sulla blockchain locale lo smart contract chiamato "EventExample" (usando Account #0 come creatore).'
+        },
+        {
+          cmd: 'await instance.waitForDeployment();',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Aspetta che il deploy sia effettivamente confermato prima di iniziare a chiamare le funzioni del contratto.'
+        },
+        {
+          cmd: 'const tx = await instance.transfer(receiver.address, 100);',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Invia la transazione chiamando la funzione Solidity transfer(to, amount). Stampa undefined perché salva l\'oggetto tx nella costante.'
+        },
+        {
+          cmd: 'const receipt = await tx.wait();',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Aspetta che la transazione tx sia inserita in un blocco e salva la ricevuta completa (gasUsed, status, logs) nella costante receipt.'
+        },
+        {
+          cmd: 'await (await c.transfer(bob.address, 200)).wait();',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Forma compatta dei due comandi sopra: invia la transazione (await interno), aspetta il blocco (await esterno) e stampa subito il ContractTransactionReceipt.'
+        },
+        {
+          cmd: 'receipt.logs[0].eventName',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Legge il nome del primo evento emesso nella ricevuta. Nel tuo test stampa \'Transfer\'.'
+        },
+        {
+          cmd: 'receipt.logs[0].args',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Restituisce i parametri dell\'evento dentro un Proxy Result(3): [from, to, amount]. Nota 100n che è un BigInt.'
+        },
+        {
+          cmd: 'receipt.logs[0].args[2].toString()',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Converte il terzo argomento (100n, tipo BigInt) nella stringa leggibile \'100\' per poterla stampare pulita con console.log.'
+        },
+        {
+          cmd: 'console.log({ event: ..., from: ..., to: ..., amount: ... })',
+          cat: 'eventi',
+          catLabel: 'Eventi & Log',
+          desc: 'Stampa a schermo un oggetto JavaScript ordinato con nome evento, mittente, destinatario e importo.'
+        },
+        {
+          cmd: 'const filter = c.filters.Transfer(sender.address, alice.address);',
+          cat: 'filtri',
+          catLabel: 'Filtri & Listener',
+          desc: 'Costruisce un filtro di ricerca per trovare SOLO gli eventi Transfer con from = sender e to = alice (possibile perché from e to sono indexed).'
+        },
+        {
+          cmd: 'const events = await c.queryFilter(filter);',
+          cat: 'filtri',
+          catLabel: 'Filtri & Listener',
+          desc: 'Interroga i blocchi già minati e raccoglie in un array tutti i log Transfer che rispettano il filtro.'
+        },
+        {
+          cmd: 'events.length',
+          cat: 'filtri',
+          catLabel: 'Filtri & Listener',
+          desc: 'Mostra quanti eventi sono stati trovati dal filtro (nel tuo caso 1, perché il trasferimento da 200 verso bob è stato escluso).'
+        },
+        {
+          cmd: 'events[0].args',
+          cat: 'filtri',
+          catLabel: 'Filtri & Listener',
+          desc: 'Mostra gli argomenti del primo evento trovato dal filtro (quello verso Alice da 100n).'
+        },
+        {
+          cmd: 'await c.on("Transfer", (from, to, amount) => console.log(...));',
+          cat: 'filtri',
+          catLabel: 'Filtri & Listener',
+          desc: 'Sottoscrizione in tempo reale: registra una funzione che scatta automaticamente ogni volta che il contratto emette Transfer.'
+        },
+        {
+          cmd: 'await c.removeAllListeners();',
+          cat: 'filtri',
+          catLabel: 'Filtri & Listener',
+          desc: 'Spegne e rimuove tutti gli ascoltatori (listener) attivi sul contratto c per evitare stampe future o memory leak.'
+        },
+        {
+          cmd: 'await token.getAddress()',
+          cat: 'owned',
+          catLabel: 'OwnedToken & Deploy',
+          desc: 'Restituisce l\'indirizzo sulla blockchain dove vive il contratto token (nel tuo output: \'0xa513E6E4b8f2a923D98304ec87F64353C4D5C853\').'
+        },
+        {
+          cmd: 'await token.owner()',
+          cat: 'owned',
+          catLabel: 'OwnedToken & Deploy',
+          desc: 'Chiama il getter automatico della variabile public owner di OwnedToken, restituendo \'0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\'.'
+        },
+        {
+          cmd: 'ethers.decodeBytes32String(await token.name())',
+          cat: 'owned',
+          catLabel: 'OwnedToken & Deploy',
+          desc: 'Legge il valore bytes32 salvato in token.name() (0x546f6b656e4e616d650000...) e lo decodifica nella stringa leggibile \'TokenName\'.'
+        },
+        {
+          cmd: 'await token.deploymentTransaction().wait()',
+          cat: 'owned',
+          catLabel: 'OwnedToken & Deploy',
+          desc: 'Recupera e attende la ricevuta della transazione che ha deployato OwnedToken (to: null, contractAddress: 0xa513..., gasUsed: 378711n).'
+        },
+        {
+          cmd: '.exit',
+          cat: 'setup',
+          catLabel: 'Setup Hardhat',
+          desc: 'Esce dalla console interattiva di Hardhat e torna al prompt normale di macOS (zsh).'
+        }
+      ];
+
+      var glossaryBody = document.getElementById('glossaryBody');
+      var glossarySearch = document.getElementById('glossarySearch');
+      var glossaryEmpty = document.getElementById('glossaryEmpty');
+      var activeCat = 'all';
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function renderGlossary() {
+        if (!glossaryBody) return;
+        var q = (glossarySearch ? glossarySearch.value : '').trim().toLowerCase();
+        glossaryBody.innerHTML = '';
+        var count = 0;
+
+        commandsData.forEach(function (item) {
+          var matchCat = activeCat === 'all' || item.cat === activeCat;
+          var matchText = !q ||
+            item.cmd.toLowerCase().indexOf(q) !== -1 ||
+            item.desc.toLowerCase().indexOf(q) !== -1 ||
+            item.catLabel.toLowerCase().indexOf(q) !== -1;
+
+          if (matchCat && matchText) {
+            count++;
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td><code>' + escapeHtml(item.cmd) + '</code></td>' +
+              '<td><span class="cat-badge">' + escapeHtml(item.catLabel) + '</span></td>' +
+              '<td>' + escapeHtml(item.desc) + '</td>';
+            glossaryBody.appendChild(tr);
+          }
+        });
+
+        if (glossaryEmpty) {
+          glossaryEmpty.style.display = count === 0 ? 'block' : 'none';
+        }
+      }
+
+      if (glossarySearch) {
+        glossarySearch.addEventListener('input', renderGlossary);
+      }
+      document.querySelectorAll('#filterPills .filter-pill').forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          document.querySelectorAll('#filterPills .filter-pill').forEach(function (p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          activeCat = pill.getAttribute('data-cat') || 'all';
+          renderGlossary();
+        });
+      });
+      renderGlossary();
+
+      // 5. Interactive Mini-Quiz
+      var quizData = [
+        {
+          q: '1. Perché in event Transfer(address indexed from, address indexed to, uint amount) mettiamo indexed su from e to?',
+          opts: [
+            'Per rendere obbligatorio il pagamento di Ether in Wei',
+            'Per poter filtrare velocemente i log per mittente/destinatario con queryFilter',
+            'Per permettere a un altro smart contract di rileggere gli eventi dal passato'
+          ],
+          ans: 1,
+          exp: 'Esatto! I parametri indexed finiscono nei topics del log e permettono di filtrare con c.filters.Transfer(...). Nessuno smart contract può invece rileggere i log.'
+        },
+        {
+          q: '2. Cosa fa esattamente const receipt = await tx.wait(); nella console?',
+          opts: [
+            'Annulla la transazione se il saldo è zero',
+            'Aspetta che la transazione venga inclusa in un blocco e restituisce la ricevuta coi log',
+            'Compila il file Solidity e avvia il nodo locale'
+          ],
+          ans: 1,
+          exp: 'Esatto! tx è la transazione appena spedita; tx.wait() aspetta la conferma nel blocco e ti dà il ContractTransactionReceipt con status, gasUsed e logs.'
+        },
+        {
+          q: '3. Qual è la differenza tra c.queryFilter(filter) e c.on("Transfer", ...)?',
+          opts: [
+            'queryFilter cerca gli eventi passati già salvati nei blocchi; c.on() ascolta in tempo reale gli eventi futuri',
+            'queryFilter funziona solo su Remix; c.on() funziona solo su Truffle',
+            'Non c\'è nessuna differenza, fanno esattamente la stessa cosa'
+          ],
+          ans: 0,
+          exp: 'Perfetto! queryFilter interroga lo storico (sez. 6.4), mentre c.on() attiva una sottoscrizione live (sez. 6.5) finché non chiami removeAllListeners().'
+        },
+        {
+          q: '4. Nel modifier onlyOwner(), cosa indica il simbolo _; alla fine?',
+          opts: [
+            'Indica un commento ignorato dal compilatore',
+            'Il punto esatto in cui viene eseguito il codice della funzione protetta dal modifier',
+            'La conversione automatica da Ether a Wei'
+          ],
+          ans: 1,
+          exp: 'Giusto! Il modifier controlla require(msg.sender == owner) e, solo se passa, esegue il corpo della funzione esattamente dove si trova _;.'
+        },
+        {
+          q: '5. Perché nell\'output di receipt.logs[0].args l\'importo appare come 100n e perché a pag. 7 usiamo interface ERC20Interface?',
+          opts: [
+            '100n significa numero negativo; l\'interface serve per crittografare il contratto',
+            '100n è un BigInt (per numeri interi enormi tipici di Wei/token); l\'interface fa da "telecomando" per chiamare un token già deployato senza copiarne il codice',
+            '100n indica 100 nanosecondi; l\'interface serve per spegnere i listener'
+          ],
+          ans: 1,
+          exp: 'Corretto! La n finale è il tipo BigInt di JavaScript (usando .toString() diventa "100"), mentre un\'interface dichiara solo le firme external per parlare con un altro contratto.'
+        }
+      ];
+
+      var quizContainer = document.getElementById('quizContainer');
+      var quizScoreText = document.getElementById('quizScoreText');
+      var quizResetBtn = document.getElementById('quizResetBtn');
+      var scoreState = {};
+
+      function updateScore() {
+        var total = 0;
+        Object.keys(scoreState).forEach(function (k) {
+          if (scoreState[k]) total++;
+        });
+        if (quizScoreText) {
+          quizScoreText.textContent = 'Risposte corrette: ' + total + ' / ' + quizData.length;
+        }
+      }
+
+      function renderQuiz() {
+        if (!quizContainer) return;
+        scoreState = {};
+        quizContainer.innerHTML = '';
+
+        quizData.forEach(function (qObj, qIdx) {
+          var wrap = document.createElement('div');
+          wrap.className = 'quiz-item';
+
+          var qTitle = document.createElement('div');
+          qTitle.className = 'quiz-q';
+          qTitle.textContent = qObj.q;
+          wrap.appendChild(qTitle);
+
+          var optsWrap = document.createElement('div');
+          optsWrap.className = 'quiz-options';
+
+          var fb = document.createElement('div');
+          fb.className = 'quiz-feedback';
+
+          qObj.opts.forEach(function (optText, optIdx) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-opt';
+            btn.textContent = optText;
+            btn.addEventListener('click', function () {
+              var allBtns = optsWrap.querySelectorAll('.quiz-opt');
+              allBtns.forEach(function (b, bIdx) {
+                b.disabled = true;
+                if (bIdx === qObj.ans) b.classList.add('correct');
+              });
+              if (optIdx === qObj.ans) {
+                scoreState[qIdx] = true;
+                fb.className = 'quiz-feedback show ok';
+                fb.textContent = qObj.exp;
+              } else {
+                btn.classList.add('wrong');
+                scoreState[qIdx] = false;
+                fb.className = 'quiz-feedback show ko';
+                fb.textContent = 'Non proprio! ' + qObj.exp;
+              }
+              updateScore();
+            });
+            optsWrap.appendChild(btn);
+          });
+
+          wrap.appendChild(optsWrap);
+          wrap.appendChild(fb);
+          quizContainer.appendChild(wrap);
+        });
+        updateScore();
+      }
+
+      if (quizResetBtn) {
+        quizResetBtn.addEventListener('click', renderQuiz);
+      }
+      renderQuiz();
+
+      // 6. Active sidebar link on scroll
+      var sections = Array.prototype.slice.call(document.querySelectorAll('main section[id]'));
+      var navLinks = Array.prototype.slice.call(document.querySelectorAll('#navList .nav-link'));
+
+      function updateActiveNav() {
+        var scrollPos = window.scrollY + 140;
+        var currentId = sections[0] ? sections[0].id : '';
+        sections.forEach(function (sec) {
+          if (sec.offsetTop <= scrollPos) {
+            currentId = sec.id;
+          }
+        });
+        navLinks.forEach(function (link) {
+          var href = link.getAttribute('href');
+          if (href === '#' + currentId) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', updateActiveNav, { passive: true });
+      updateActiveNav();
+    })();
+  </script>
+</body>
+</html>

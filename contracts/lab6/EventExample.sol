@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-/// @title EventExample
-/// @author G. Vianello
-/// @notice Events are logs/record created to allow external entities to react to specific occurrences
+
 contract EventExample {
 
     // Event declaration
