@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Lab 6 (Pagina 7) — Token ERC-20, MetaMask &amp; Interfacce</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-soft: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #7c3aed;
+      --accent-light: #f5f3ff;
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --term-bg: #0f172a;
+      --term-header: #1e293b;
+      --term-text: #e2e8f0;
+      --term-green: #4ade80;
+      --term-yellow: #fde047;
+      --term-cyan: #38bdf8;
+      --term-purple: #c084fc;
+      --term-orange: #fb923c;
+      --term-muted: #94a3b8;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .brand {
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+      border: 1px solid #dbeafe;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 0.98rem;
+      color: var(--primary-dark);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.87rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+
+    .nav-link.active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .nav-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--surface-soft);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .nav-link.active .nav-num {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .main-content {
+      padding: 32px 40px 80px;
+      min-width: 0;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1e1b4b 100%);
+      color: #f8fafc;
+      border-radius: 16px;
+      padding: 32px 34px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #7dd3fc;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 1.9rem;
+      line-height: 1.22;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #cbd5e1;
+      max-width: 78ch;
+      font-size: 1rem;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .pillar-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .pillar-card strong {
+      display: block;
+      color: #fff;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+    }
+
+    .pillar-card span {
+      display: block;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    /* Sections & Cards */
+    section {
+      scroll-margin-top: 24px;
+      margin-bottom: 34px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .section-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .section-tag.purple { background: var(--accent-light); color: var(--accent); }
+    .section-tag.green { background: var(--success-light); color: var(--success); }
+    .section-tag.amber { background: var(--warning-light); color: var(--warning); }
+
+    h2 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: -0.015em;
+      color: var(--text);
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 1.12rem;
+      color: var(--text);
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--text-muted);
+    }
+
+    ul, ol {
+      margin: 0 0 14px;
+      padding-left: 22px;
+      color: var(--text-muted);
+    }
+
+    li { margin-bottom: 6px; }
+
+    strong { color: var(--text); }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--surface-soft);
+      color: #b91c1c;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      border-left: 4px solid var(--primary);
+      background: var(--primary-light);
+      color: #1e3a8a;
+      font-size: 0.94rem;
+    }
+
+    .callout strong { color: inherit; }
+
+    .callout.info { border-color: var(--primary); background: var(--primary-light); color: #1e3a8a; }
+    .callout.tip { border-color: var(--success); background: var(--success-light); color: #065f46; }
+    .callout.warn { border-color: var(--warning); background: var(--warning-light); color: #92400e; }
+    .callout.purple { border-color: var(--accent); background: var(--accent-light); color: #4c1d95; }
+
+    /* Grids */
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 14px 0;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .mini-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .mini-box h4 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+      color: var(--text);
+    }
+
+    /* Code & Terminal Blocks */
+    .code-wrap {
+      background: var(--term-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 14px 0 18px;
+      border: 1px solid #1e293b;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .code-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--term-header);
+      border-bottom: 1px solid #334155;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      font-family: var(--font-mono);
+    }
+
+    .code-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 10px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot.r { background: #ef4444; }
+    .dot.y { background: #eab308; }
+    .dot.g { background: #22c55e; }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.18); }
+
+    pre {
+      margin: 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.58;
+      color: var(--term-text);
+    }
+
+    .t-prompt { color: var(--term-cyan); font-weight: 700; }
+    .t-cmd { color: #f8fafc; font-weight: 600; }
+    .t-str { color: var(--term-green); }
+    .t-num { color: var(--term-yellow); }
+    .t-kw { color: var(--term-purple); }
+    .t-com { color: var(--term-muted); font-style: italic; }
+
+    /* Step-by-step timeline */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .step-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      background: #fcfdff;
+    }
+
+    .step-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .step-num {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.76rem;
+      padding: 2px 9px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .step-num.purple { background: var(--accent); }
+    .step-num.green { background: var(--success); }
+    .step-num.amber { background: var(--warning); }
+
+    .step-cmd {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #0f172a;
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 6px;
+      word-break: break-all;
+    }
+
+    .step-body {
+      font-size: 0.93rem;
+      color: var(--text-muted);
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 14px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 700;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    /* Interactive Balance Simulator */
+    .sim-controls {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0 16px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .balance-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .bal-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      background: #fcfdff;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .bal-card.owner { border-top: 4px solid var(--primary); }
+    .bal-card.contract { border-top: 4px solid var(--accent); }
+    .bal-card.receiver { border-top: 4px solid var(--success); }
+
+    .bal-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-soft);
+    }
+
+    .bal-addr {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .bal-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 8px 0 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .bal-bar-track {
+      height: 8px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bal-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .bal-card.owner .bal-bar-fill { background: var(--primary); }
+    .bal-card.contract .bal-bar-fill { background: var(--accent); }
+    .bal-card.receiver .bal-bar-fill { background: var(--success); }
+
+    .sim-meta {
+      background: var(--term-bg);
+      color: var(--term-text);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.88rem;
+      display: grid;
+      gap: 8px;
+    }
+
+    .sim-meta-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+
+    .sim-meta-key {
+      font-family: var(--font-mono);
+      color: #7dd3fc;
+      font-weight: 700;
+      min-width: 145px;
+    }
+
+    .sim-meta-val code {
+      background: rgba(255, 255, 255, 0.09);
+      color: #4ade80;
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    /* SVG diagrams */
+    .diagram-box {
+      background: #fcfdff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .diagram-caption {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* Search & Filter bar */
+    .glossary-toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 14px 0;
+    }
+
+    .search-input {
+      flex: 1 1 260px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      font-size: 0.92rem;
+      font-family: var(--font-sans);
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill {
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filter-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Quiz */
+    .quiz-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      background: #fcfdff;
+    }
+
+    .quiz-q {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      font-size: 0.98rem;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .quiz-opt {
+      text-align: left;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+
+    .quiz-opt:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .quiz-opt.correct {
+      background: var(--success-light);
+      border-color: var(--success);
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    .quiz-opt.wrong {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      color: #991b1b;
+    }
+
+    .quiz-feedback {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.ok { background: var(--success-light); color: #065f46; }
+    .quiz-feedback.ko { background: var(--danger-light); color: #991b1b; }
+
+    .quiz-score-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 1040px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: auto;
+        z-index: 40;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 16px;
+      }
+      .brand { display: none; }
+      .nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .nav-link { white-space: nowrap; padding: 6px 10px; }
+      .main-content { padding: 20px 18px 60px; }
+      .pillars-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .two-col, .three-col, .balance-cards { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+      .card { padding: 18px 16px; }
+      .hero { padding: 22px 18px; }
+      .hero h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">Lab 6 • Task Pagina 7</div>
+        <div class="brand-sub">ERC-20, MetaMask &amp; Interfacce</div>
+      </div>
+      <ul class="nav-list" id="navList">
+        <li><a class="nav-link active" href="#panoramica"><span class="nav-num">0</span>Il Senso Generale</a></li>
+        <li><a class="nav-link" href="#contratti"><span class="nav-num">1</span>I 3 File Solidity</a></li>
+        <li><a class="nav-link" href="#cronologia"><span class="nav-num">2</span>Cronologia &amp; MetaMask</a></li>
+        <li><a class="nav-link" href="#saldi"><span class="nav-num">3</span>Flusso Saldi Interattivo</a></li>
+        <li><a class="nav-link" href="#dizionario"><span class="nav-num">4</span>Dizionario Comandi</a></li>
+        <li><a class="nav-link" href="#esame"><span class="nav-num">5</span>Concetti Esame &amp; Quiz</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+      <!-- SEZIONE 0: PANORAMICA -->
+      <section id="panoramica">
+        <div class="hero">
+          <div class="hero-badge">Report Didattico • Software Security &amp; Blockchain • Lab 6 (Pag. 7)</div>
+          <h1>Token ERC-20, MetaMask e Interfacce: tutto spiegato semplice</h1>
+          <p>
+            Questo report raccoglie passo-passo tutto quello che hai costruito per il task di pagina 7 di
+            <strong>Lab 6 - Manual.pdf</strong>: dalla creazione della tua criptovaluta <code>UniToken (UNI)</code>
+            su Hardhat fino al collegamento con <strong>MetaMask</strong> e alla chiamata tra due smart contract diversi
+            tramite <code>ERC20Interface</code>.
+          </p>
+
+          <div class="pillars-grid">
+            <div class="pillar-card">
+              <strong>1. Cos'è un Token</strong>
+              <span>Non è una "moneta nel browser": è un contratto con un registro (<code>balanceOf</code>) che segna chi possiede quanto.</span>
+            </div>
+            <div class="pillar-card">
+              <strong>2. Cos'è MetaMask</strong>
+              <span>È una finestra visiva sulla blockchain: legge il contratto del token e ti mostra nome, simbolo e saldo.</span>
+            </div>
+            <div class="pillar-card">
+              <strong>3. Cos'è l'Interface</strong>
+              <span>È il "telecomando" (<code>IERC20.sol</code>): dichiara solo i nomi delle funzioni per far parlare due contratti.</span>
+            </div>
+            <div class="pillar-card">
+              <strong>4. Chi paga cosa</strong>
+              <span>Quando <code>xzy</code> chiama <code>token.transfer()</code>, il mittente è <code>xzy</code> stesso, non il tuo account!</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag">L'idea dietro l'esercizio</span>
+            <h2>0. Il senso generale: come lavorano insieme i pezzi</h2>
+          </div>
+
+          <p>
+            Immagina il tuo esercizio come un sistema con <strong>4 attori</strong> molto facili da visualizzare nella vita reale:
+          </p>
+
+          <div class="two-col">
+            <div class="mini-box">
+              <h4>1. <code>MyToken</code> = Il foglio Excel della banca</h4>
+              <p style="margin:0;">
+                È uno smart contract che tiene una tabella con scritto: <em>"Indirizzo A ha 700 UNI, Indirizzo B ha 200 UNI..."</em>.
+                Quando sposti token, non spedisci file: aggiorni solo due numeri in questa tabella.
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>2. MetaMask = L'app della banca sul telefono</h4>
+              <p style="margin:0;">
+                MetaMask non conserva i token dentro Chrome: chiede al contratto <code>MyToken</code> quanto vale <code>balanceOf(tuoIndirizzo)</code>
+                e te lo stampa pulito sullo schermo.
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>3. <code>IERC20.sol</code> = Il telecomando universale</h4>
+              <p style="margin:0;">
+                Contiene solo i <strong>tasti</strong> (le firme delle 5 funzioni: <code>transfer</code>, <code>approve</code>, <code>getAllowance</code>, <code>minting</code>, <code>burning</code>),
+                senza nessuna riga di implementazione dentro.
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>4. <code>xzy</code> = Un distributore automatico di token</h4>
+              <p style="margin:0;">
+                È un secondo contratto che usa il telecomando per comandare <code>MyToken</code>. Ma proprio come un distributore automatico,
+                per poter dare token ai clienti devi <strong>prima caricarlo</strong> con un po' di UNI!
+              </p>
+            </div>
+          </div>
+
+          <div class="diagram-box">
+            <svg viewBox="0 0 880 215" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flusso chiamate tra Account #0, xzy, ERC20Interface e MyToken">
+              <defs>
+                <marker id="arrMain" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+                </marker>
+              </defs>
+
+              <!-- Account #0 -->
+              <rect x="14" y="48" width="185" height="106" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+              <text x="106" y="76" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="800" fill="#1e3a8a">Tu (Account #0)</text>
+              <text x="106" y="96" text-anchor="middle" font-family="monospace" font-size="11" fill="#475569">0xf39F...2266</text>
+              <text x="106" y="120" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e40af">1) Carica xzy (300 UNI)</text>
+              <text x="106" y="138" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#1d4ed8">2) caller.sellToken(...)</text>
+
+              <line x1="199" y1="101" x2="262" y2="101" stroke="#475569" stroke-width="2" marker-end="url(#arrMain)"/>
+              <text x="230" y="90" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#334155">chiama</text>
+
+              <!-- Contratto xzy -->
+              <rect x="266" y="34" width="235" height="134" rx="12" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+              <text x="383" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="800" fill="#4c1d95">Contratto 2: xzy</text>
+              <text x="383" y="80" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#6d28d9">ERC20_InterfaceCall.sol</text>
+              <rect x="284" y="93" width="199" height="30" rx="6" fill="#ede9fe" stroke="#c4b5fd"/>
+              <text x="383" y="112" text-anchor="middle" font-family="monospace" font-size="11" fill="#5b21b6">token = ERC20Interface(addr)</text>
+              <text x="383" y="147" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#6d28d9">token.transfer(_to, _amount)</text>
+
+              <!-- Telecomando Interface -->
+              <line x1="501" y1="101" x2="578" y2="101" stroke="#475569" stroke-width="2" marker-end="url(#arrMain)"/>
+              <rect x="510" y="58" width="60" height="24" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+              <text x="540" y="74" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#92400e">IERC20</text>
+
+              <!-- Contratto MyToken -->
+              <rect x="582" y="34" width="284" height="134" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+              <text x="724" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="800" fill="#065f46">Contratto 1: MyToken (UNI)</text>
+              <text x="724" y="80" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#047857">ERC-20-Token.sol</text>
+              <text x="724" y="106" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#334155">Esegue transfer(to, value):</text>
+              <text x="724" y="126" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#065f46">msg.sender == indirizzo di xzy!</text>
+              <text x="724" y="148" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">Scala dal saldo di xzy e accredita Receiver</text>
+
+              <!-- MetaMask footer -->
+              <rect x="582" y="180" width="284" height="28" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+              <text x="724" y="198" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#92400e">MetaMask legge qui symbol(), decimals(), balanceOf()</text>
+            </svg>
+            <div class="diagram-caption">Architettura completa del task di pagina 7: <code>xzy</code> usa l'interfaccia <code>ERC20Interface</code> per interagire con <code>MyToken</code> già deployato.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 1: I 3 FILE SOLIDITY -->
+      <section id="contratti">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag purple">Codice sorgente</span>
+            <h2>1. I 3 file Solidity che hai creato in <code>contracts/lab6/</code></h2>
+          </div>
+
+          <p>
+            Ecco esattamente cosa contiene ciascuno dei tre file presenti nella tua cartella <code>contracts/lab6/</code>
+            e che ruolo svolge ogni blocco di codice.
+          </p>
+
+          <h3>A. <code>ERC-20-Token.sol</code> — Il contratto del token (<code>MyToken</code>)</h3>
+          <p>
+            È il cuore della tua criptovaluta. Gestisce il registro dei saldi (<code>balanceOf</code>), le autorizzazioni di spesa
+            (<code>allowance</code>), la creazione di nuovi token (<code>minting</code>) e la distruzione (<code>burning</code>).
+          </p>
+          <ul>
+            <li><strong><code>name</code>, <code>symbol</code>, <code>decimals = 18</code>, <code>totalSupply</code>:</strong> i metadati standard che MetaMask legge in automatico appena incolli l'indirizzo del contratto.</li>
+            <li><strong><code>constructor(...)</code>:</strong> gira una sola volta al deploy. Salva te (<code>msg.sender</code>) come <code>owner</code>, moltiplica <code>_initialSupply</code> per <code>10**18</code> (perché Solidity non ha decimali) e ti assegna tutto il saldo iniziale.</li>
+            <li><strong><code>transfer(to, value)</code>:</strong> controlla che <code>to</code> non sia <code>0x000...</code> e che <code>msg.sender</code> abbia abbastanza token, poi sposta i numeri e lancia l'evento <code>Transfer</code>.</li>
+            <li><strong><code>approve(spender, value)</code> &amp; <code>getAllowance(from, spender)</code>:</strong> permettono di delegare un altro indirizzo a spendere fino a una certa soglia al posto tuo, e di leggere quel limite.</li>
+            <li><strong><code>minting(...)</code> &amp; <code>burning(...)</code>:</strong> riservati solo all'<code>owner</code> (<code>require(msg.sender == owner &amp;&amp; _initAdd == owner)</code>): aumentano o diminuiscono la quantità totale in circolazione.</li>
+          </ul>
+
+          <div class="code-wrap">
+            <div class="code-bar">
+              <span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>contracts/lab6/ERC-20-Token.sol</span>
+              <button class="copy-btn" data-copy="codeToken" type="button">Copia</button>
+            </div>
+            <pre id="codeToken">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+contract MyToken {
+    string public name;
+    string public symbol;
+    uint8 public decimals = 18;
+    uint256 public totalSupply;
+    address public owner;
+
+    mapping(address =&gt; uint256) public balanceOf;
+    mapping(address =&gt; mapping(address =&gt; uint256)) public allowance;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    constructor(string memory _name, string memory _symbol, uint256 _initialSupply) {
+        owner = msg.sender;
+        name = _name;
+        symbol = _symbol;
+
+        // Scala l'offerta iniziale con i 18 decimali standard ERC-20
+        uint256 scaledSupply = _initialSupply * (10 ** uint256(decimals));
+        totalSupply = scaledSupply;
+        balanceOf[msg.sender] = scaledSupply;
+
+        emit Transfer(address(0), msg.sender, scaledSupply);
+    }
+
+    function transfer(address to, uint256 value) public returns (bool) {
+        require(to != address(0), "Invalid recipient");
+        require(balanceOf[msg.sender] &gt;= value, "Insufficient balance");
+
+        balanceOf[msg.sender] -= value;
+        balanceOf[to] += value;
+
+        emit Transfer(msg.sender, to, value);
+        return true;
+    }
+
+    function approve(address spender, uint256 value) public returns (bool) {
+        require(spender != address(0), "Invalid spender");
+        allowance[msg.sender][spender] = value;
+
+        emit Approval(msg.sender, spender, value);
+        return true;
+    }
+
+    function getAllowance(address from, address spender) public view returns (uint256) {
+        return allowance[from][spender];
+    }
+
+    function minting(address _initAdd, address _toAdd, uint256 _mintAmount) public {
+        require(msg.sender == owner &amp;&amp; _initAdd == owner, "Only owner can mint");
+        require(_toAdd != address(0), "Invalid recipient");
+
+        totalSupply += _mintAmount;
+        balanceOf[_toAdd] += _mintAmount;
+
+        emit Transfer(address(0), _toAdd, _mintAmount);
+    }
+
+    function burning(address _initAdd, address _toAdd, uint256 _burAmount) public {
+        require(msg.sender == owner &amp;&amp; _initAdd == owner, "Only owner can burn");
+        require(balanceOf[_toAdd] &gt;= _burAmount, "Insufficient balance to burn");
+
+        balanceOf[_toAdd] -= _burAmount;
+        totalSupply -= _burAmount;
+
+        emit Transfer(_toAdd, address(0), _burAmount);
+    }
+}</pre>
+          </div>
+
+          <h3>B. <code>IERC20.sol</code> — L'interfaccia (<code>ERC20Interface</code>)</h3>
+          <p>
+            Un'<code>interface</code> in Solidity non contiene variabili di stato né codice dentro <code>{ ... }</code>:
+            elenca soltanto le <strong>firme delle funzioni</strong> marcate <code>external</code> (obbligatorio nelle interfacce)
+            per permettere a un contratto esterno di sapere come chiamare il token.
+          </p>
+
+          <div class="code-wrap">
+            <div class="code-bar">
+              <span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>contracts/lab6/IERC20.sol</span>
+              <button class="copy-btn" data-copy="codeIerc20" type="button">Copia</button>
+            </div>
+            <pre id="codeIerc20">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+interface ERC20Interface {
+    function transfer(address to, uint256 value) external;
+    function approve(address spender, uint256 value) external;
+    function getAllowance(address from, address spender) external view;
+    function minting(address _initAdd, address _toAdd, uint _mintAmount) external;
+    function burning(address _initAdd, address _toAdd, uint _burAmount) external;
+}</pre>
+          </div>
+
+          <div class="callout info">
+            <strong>Dettaglio curioso dal manuale:</strong> nel PDF la firma <code>getAllowance(...)</code> è scritta senza <code>returns (uint256)</code>.
+            Solidity la compila senza problemi; se un giorno volessi anche <em>leggere</em> quel valore da dentro un altro contratto, ti basterebbe aggiungere <code>returns (uint256)</code>.
+          </div>
+
+          <h3>C. <code>ERC20_InterfaceCall.sol</code> — Il contratto chiamante (<code>xzy</code>)</h3>
+          <p>
+            Importa <code>./IERC20.sol</code>, salva l'indirizzo del tuo token dentro il riferimento <code>token = ERC20Interface(_tokenAddress)</code>
+            al momento del deploy, e offre la funzione <code>sellToken(_to, _amount)</code> che chiama <code>token.transfer(_to, _amount)</code>.
+          </p>
+
+          <div class="code-wrap">
+            <div class="code-bar">
+              <span><span class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>contracts/lab6/ERC20_InterfaceCall.sol</span>
+              <button class="copy-btn" data-copy="codeCaller" type="button">Copia</button>
+            </div>
+            <pre id="codeCaller">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import "./IERC20.sol";
+
+contract xzy {
+    ERC20Interface token;
+    address public owner = msg.sender;
+
+    constructor(address _tokenAddress) {
+        token = ERC20Interface(_tokenAddress);
+    }
+
+    function sellToken(address _to, uint _amount) public {
+        token.transfer(_to, _amount);
+    }
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 2: CRONOLOGIA PASSO-PASSO -->
+      <section id="cronologia">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag green">Cosa hai eseguito</span>
+            <h2>2. Cronologia passo-passo (Hardhat + MetaMask)</h2>
+          </div>
+
+          <p>
+            Ecco tutto il percorso che hai svolto in ordine cronologico, diviso in 4 fasi chiare.
+          </p>
+
+          <h3>Fase 1 — Blockchain locale con Hardhat</h3>
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 1</span>
+                <span class="step-cmd">npm run compile</span>
+              </div>
+              <div class="step-body">
+                Ha controllato che i 3 file <code>.sol</code> non avessero errori e li ha compilati con Solidity <code>0.8.28</code>, generando i file JSON (ABI + bytecode) nella cartella <code>artifacts/contracts/lab6/</code>.
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num">Passo 2</span>
+                <span class="step-cmd">npm run node</span>
+              </div>
+              <div class="step-body">
+                Ha acceso una <strong>blockchain locale privata</strong> sul tuo Mac su <code>http://127.0.0.1:8545</code> (Chain ID <code>31337</code>), regalandoti 20 account finti con <strong>10,000 ETH</strong> ciascuno per fare test gratis.
+              </div>
+            </div>
+          </div>
+
+          <h3>Fase 2 — Collegamento di MetaMask (interfaccia Multichain)</h3>
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num purple">Passo 3</span>
+                <span class="step-cmd">Rete personalizzata "Hardhat Local"</span>
+              </div>
+              <div class="step-body">
+                Hai aggiunto in MetaMask la rete locale (RPC <code>http://127.0.0.1:8545</code>, Chain ID <code>31337</code>, simbolo <code>ETH</code>).
+                Nella nuova interfaccia <strong>Multichain</strong> di MetaMask non c'è più il vecchio menu unico in alto: si filtra la rete direttamente dal menu a tendina nella scheda <strong>Tokens</strong> (attivando <em>Show test networks</em> se non compare subito).
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num purple">Passo 4</span>
+                <span class="step-cmd">Importazione Private Key Account #0 (0xf39F...2266)</span>
+              </div>
+              <div class="step-body">
+                Hai importato la chiave privata dell'<strong>Account #0</strong> stampata dal nodo Hardhat: in questo modo il terminale e MetaMask puntano allo <strong>stesso identico portafoglio</strong>, e hai visto comparire i <strong>10,000 ETH</strong> di test.
+              </div>
+            </div>
+          </div>
+
+          <h3>Fase 3 — Deploy del Token e importazione in MetaMask</h3>
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num green">Passo 5</span>
+                <span class="step-cmd">ethers.deployContract("MyToken", ["UniToken", "UNI", 1000])</span>
+              </div>
+              <div class="step-body">
+                Dalla console Hardhat (<code>npm run console</code>) hai pubblicato <code>MyToken</code> sulla rete locale creando <strong>1,000 UNI</strong> e assegnandoli automaticamente all'Account #0 (<code>owner</code>).
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num green">Passo 6</span>
+                <span class="step-cmd">MetaMask → Import tokens → Custom token</span>
+              </div>
+              <div class="step-body">
+                Incollando <code>tokenAddress</code> sulla rete <code>Hardhat Local</code>, MetaMask ha interrogato il tuo contratto, letto automaticamente simbolo <code>UNI</code> e decimali <code>18</code>, e ti ha mostrato <strong>1,000 UNI</strong> nel wallet.
+              </div>
+            </div>
+          </div>
+
+          <h3>Fase 4 — Deploy di <code>xzy</code> e trasferimento tramite Interface</h3>
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num amber">Passo 7</span>
+                <span class="step-cmd">ethers.deployContract("xzy", [tokenAddress])</span>
+              </div>
+              <div class="step-body">
+                Hai deployato il secondo contratto <code>xzy</code> collegandolo all'indirizzo di <code>MyToken</code>.
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-head">
+                <span class="step-num amber">Passo 8</span>
+                <span class="step-cmd">token.transfer(callerAddress, 300 UNI) → caller.sellToken(receiver, 100 UNI)</span>
+              </div>
+              <div class="step-body">
+                Prima hai rifornito <code>xzy</code> con <strong>300 UNI</strong> (così su MetaMask il tuo saldo è sceso a <strong>700 UNI</strong>), poi hai chiamato <code>sellToken</code> su <code>xzy</code> che, usando <code>ERC20Interface</code>, ha trasferito <strong>100 UNI</strong> dal saldo di <code>xzy</code> a <code>receiver</code> (Account #1).
+              </div>
+            </div>
+          </div>
+
+          <div class="callout warn">
+            <strong>Perché il Passo 8 era fondamentale?</strong><br/>
+            Dentro <code>xzy.sellToken()</code>, l'istruzione <code>token.transfer(_to, _amount)</code> parte <strong>dal contratto <code>xzy</code></strong>, non dal tuo account personale.
+            Quindi dentro <code>MyToken.transfer()</code> la variabile <code>msg.sender</code> vale <code>callerAddress</code> (l'indirizzo di <code>xzy</code>)!
+            Senza quei 300 UNI caricati prima su <code>xzy</code>, la chiamata sarebbe fallita con <code>"Insufficient balance"</code>.
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 3: SIMULATORE SALDI INTERATTIVO -->
+      <section id="saldi">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag">Visualizzazione</span>
+            <h2>3. Flusso dei saldi passo per passo</h2>
+          </div>
+
+          <p>
+            Clicca sui pulsanti qui sotto per vedere come cambiano i saldi di tutti i partecipanti dopo ogni operazione e chi è <code>msg.sender</code> dentro <code>MyToken</code>:
+          </p>
+
+          <div class="sim-controls" id="simControls">
+            <button class="tab-btn active" data-step="0" type="button">1. Deploy MyToken</button>
+            <button class="tab-btn" data-step="1" type="button">2. Carica xzy (+300 UNI)</button>
+            <button class="tab-btn" data-step="2" type="button">3. sellToken (+100 UNI a Receiver)</button>
+            <button class="tab-btn" data-step="3" type="button">4. Bonus: Mint +250 / Burn -50</button>
+          </div>
+
+          <div class="balance-cards">
+            <div class="bal-card owner">
+              <div class="bal-label">Owner (Account #0)</div>
+              <div class="bal-addr">0xf39F...2266 • Anche su MetaMask</div>
+              <div class="bal-val" id="balOwner">1,000 UNI</div>
+              <div class="bal-bar-track"><div class="bal-bar-fill" id="barOwner" style="width: 83.3%;"></div></div>
+            </div>
+            <div class="bal-card contract">
+              <div class="bal-label">Contratto xzy</div>
+              <div class="bal-addr">callerAddress • ERC20_InterfaceCall</div>
+              <div class="bal-val" id="balCaller">0 UNI</div>
+              <div class="bal-bar-track"><div class="bal-bar-fill" id="barCaller" style="width: 0%;"></div></div>
+            </div>
+            <div class="bal-card receiver">
+              <div class="bal-label">Receiver (Account #1)</div>
+              <div class="bal-addr">0x7099...79C8 • Destinatario</div>
+              <div class="bal-val" id="balReceiver">0 UNI</div>
+              <div class="bal-bar-track"><div class="bal-bar-fill" id="barReceiver" style="width: 0%;"></div></div>
+            </div>
+          </div>
+
+          <div class="sim-meta">
+            <div class="sim-meta-row">
+              <span class="sim-meta-key">Comando eseguito:</span>
+              <span class="sim-meta-val"><code id="simCmd"></code></span>
+            </div>
+            <div class="sim-meta-row">
+              <span class="sim-meta-key">msg.sender in MyToken:</span>
+              <span class="sim-meta-val" id="simSender"></span>
+            </div>
+            <div class="sim-meta-row">
+              <span class="sim-meta-key">totalSupply totale:</span>
+              <span class="sim-meta-val" id="simSupply"></span>
+            </div>
+            <div class="sim-meta-row">
+              <span class="sim-meta-key">Cosa succede:</span>
+              <span class="sim-meta-val" id="simNote"></span>
+            </div>
+          </div>
+
+          <h3>Tabella riassuntiva dei saldi</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Momento</th>
+                  <th>Owner (Account #0)</th>
+                  <th>Contratto <code>xzy</code></th>
+                  <th>Receiver (Account #1)</th>
+                  <th>Totale (<code>totalSupply</code>)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Dopo deploy di <code>MyToken</code></td>
+                  <td><strong>1,000 UNI</strong></td>
+                  <td>0 UNI</td>
+                  <td>0 UNI</td>
+                  <td>1,000 UNI</td>
+                </tr>
+                <tr>
+                  <td>Dopo <code>token.transfer(callerAddress, 300 UNI)</code></td>
+                  <td><strong>700 UNI</strong></td>
+                  <td><strong>300 UNI</strong></td>
+                  <td>0 UNI</td>
+                  <td>1,000 UNI</td>
+                </tr>
+                <tr>
+                  <td>Dopo <code>caller.sellToken(receiver, 100 UNI)</code></td>
+                  <td><strong>700 UNI</strong></td>
+                  <td><strong>200 UNI</strong></td>
+                  <td><strong>100 UNI</strong></td>
+                  <td>1,000 UNI</td>
+                </tr>
+                <tr>
+                  <td>Dopo <code>minting(+250)</code> e <code>burning(-50)</code> su Receiver</td>
+                  <td><strong>700 UNI</strong></td>
+                  <td><strong>200 UNI</strong></td>
+                  <td><strong>300 UNI</strong></td>
+                  <td>1,200 UNI</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 4: DIZIONARIO COMANDI -->
+      <section id="dizionario">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag green">Riferimento Rapido</span>
+            <h2>4. Dizionario completo di tutti i comandi usati</h2>
+          </div>
+
+          <p>
+            Qui trovi spiegati in modo semplice tutti i comandi che hai scritto nel terminale macOS e nella console Hardhat.
+            Puoi cercare per parola chiave o filtrare per categoria.
+          </p>
+
+          <div class="glossary-toolbar">
+            <input type="search" id="glossarySearch" class="search-input" placeholder="Cerca comando o parola chiave (es. parseUnits, deployContract, sellToken, minting)..." />
+            <div class="filter-pills" id="filterPills">
+              <button class="filter-pill active" data-cat="all" type="button">Tutti</button>
+              <button class="filter-pill" data-cat="terminale" type="button">Terminale</button>
+              <button class="filter-pill" data-cat="setup" type="button">Setup &amp; Deploy</button>
+              <button class="filter-pill" data-cat="decimali" type="button">Decimali &amp; Saldi</button>
+              <button class="filter-pill" data-cat="tx" type="button">Transazioni &amp; Bonus</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Comando</th>
+                  <th>Categoria</th>
+                  <th>Spiegazione semplice</th>
+                </tr>
+              </thead>
+              <tbody id="glossaryBody"></tbody>
+            </table>
+          </div>
+          <p id="glossaryEmpty" style="display:none; text-align:center; padding:16px; color:var(--text-soft);">Nessun comando trovato con questo filtro.</p>
+        </div>
+      </section>
+
+      <!-- SEZIONE 5: CONCETTI ESAME & QUIZ -->
+      <section id="esame">
+        <div class="card">
+          <div class="section-header">
+            <span class="section-tag amber">Da ricordare all'esame</span>
+            <h2>5. I 3 concetti chiave + Mini-Quiz di ripasso</h2>
+          </div>
+
+          <div class="three-col">
+            <div class="mini-box">
+              <h4>1. ETH vs Token ERC-20</h4>
+              <p style="margin:0; font-size:0.9rem;">
+                I <strong>10,000 ETH</strong> sono la moneta nativa della rete e servono a pagare il <strong>gas</strong> delle transazioni.
+                I <strong>1,000 UNI</strong> sono invece numeri salvati nella memoria del tuo contratto <code>MyToken</code>.
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>2. Perché 18 decimali</h4>
+              <p style="margin:0; font-size:0.9rem;">
+                Solidity non ha i numeri con la virgola (<code>float</code>). Quindi <code>1 UNI</code> viene salvato come <code>10<sup>18</sup></code> unità minime:
+                si usa <code>parseUnits(..., 18)</code> per inviare e <code>formatUnits(..., 18)</code> per leggere.
+              </p>
+            </div>
+            <div class="mini-box">
+              <h4>3. Cambio di <code>msg.sender</code></h4>
+              <p style="margin:0; font-size:0.9rem;">
+                Se tu chiami <code>xzy</code> e <code>xzy</code> chiama <code>MyToken</code>, dentro <code>MyToken</code> il valore di <code>msg.sender</code>
+                è l'indirizzo di <strong><code>xzy</code></strong>, non il tuo!
+              </p>
+            </div>
+          </div>
+
+          <h3>Mini-Quiz di autoverifica (4 domande)</h3>
+          <p>Clicca una risposta per verificare subito di aver fissato i punti chiave del task.</p>
+
+          <div id="quizContainer"></div>
+
+          <div class="quiz-score-bar">
+            <span id="quizScoreText">Risposte corrette: 0 / 4</span>
+            <button class="tab-btn" id="quizResetBtn" type="button">Ricomincia Quiz</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      // 1. Copy buttons (with fallback if clipboard API is restricted on file://)
+      document.querySelectorAll('.copy-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var targetId = btn.getAttribute('data-copy');
+          var el = document.getElementById(targetId);
+          if (!el) return;
+          var text = el.textContent || '';
+
+          function markCopied() {
+            var old = btn.textContent;
+            btn.textContent = 'Copiato!';
+            setTimeout(function () { btn.textContent = old; }, 1400);
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(markCopied).catch(function () {
+              fallbackCopy(text, markCopied);
+            });
+          } else {
+            fallbackCopy(text, markCopied);
+          }
+        });
+      });
+
+      function fallbackCopy(text, done) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+
+      // 2. Interactive Balance Simulator
+      var simSteps = [
+        {
+          owner: 1000,
+          caller: 0,
+          receiver: 0,
+          supply: 1000,
+          cmd: 'await ethers.deployContract("MyToken", ["UniToken", "UNI", 1000])',
+          sender: 'Account #0 (0xf39F...2266) — esegue il constructor',
+          note: 'Viene creato il token UniToken (UNI) e tutti i 1,000 UNI iniziali vengono assegnati al creatore (Account #0).'
+        },
+        {
+          owner: 700,
+          caller: 300,
+          receiver: 0,
+          supply: 1000,
+          cmd: 'await (await token.transfer(callerAddress, ethers.parseUnits("300", 18))).wait()',
+          sender: 'Account #0 (0xf39F...2266) — chiama direttamente MyToken.transfer()',
+          note: 'Carichi il contratto xzy con 300 UNI. Su MetaMask vedi subito il saldo di Account #0 scendere da 1,000 a 700 UNI.'
+        },
+        {
+          owner: 700,
+          caller: 200,
+          receiver: 100,
+          supply: 1000,
+          cmd: 'await (await caller.sellToken(receiver.address, ethers.parseUnits("100", 18))).wait()',
+          sender: 'Contratto xzy (callerAddress) — perché è xzy a invocare token.transfer()',
+          note: 'xzy usa ERC20Interface per chiamare MyToken.transfer(): spende 100 UNI dal proprio saldo (300 -> 200) e li accredita a Receiver (0 -> 100).'
+        },
+        {
+          owner: 700,
+          caller: 200,
+          receiver: 300,
+          supply: 1200,
+          cmd: 'token.minting(owner, receiver, 250 UNI)  poi  token.burning(owner, receiver, 50 UNI)',
+          sender: 'Account #0 (0xf39F...2266) — unico autorizzato (owner) a creare/bruciare',
+          note: 'Minting crea 250 nuovi UNI per Receiver (100 -> 350, totalSupply 1250); Burning ne distrugge 50 (350 -> 300, totalSupply 1200).'
+        }
+      ];
+
+      var simBtns = document.querySelectorAll('#simControls .tab-btn');
+      var balOwner = document.getElementById('balOwner');
+      var balCaller = document.getElementById('balCaller');
+      var balReceiver = document.getElementById('balReceiver');
+      var barOwner = document.getElementById('barOwner');
+      var barCaller = document.getElementById('barCaller');
+      var barReceiver = document.getElementById('barReceiver');
+      var simCmd = document.getElementById('simCmd');
+      var simSender = document.getElementById('simSender');
+      var simSupply = document.getElementById('simSupply');
+      var simNote = document.getElementById('simNote');
+
+      function renderSimStep(idx) {
+        var s = simSteps[idx];
+        if (!s) return;
+        balOwner.textContent = s.owner.toLocaleString('en-US') + ' UNI';
+        balCaller.textContent = s.caller.toLocaleString('en-US') + ' UNI';
+        balReceiver.textContent = s.receiver.toLocaleString('en-US') + ' UNI';
+        barOwner.style.width = ((s.owner / 1200) * 100).toFixed(1) + '%';
+        barCaller.style.width = ((s.caller / 1200) * 100).toFixed(1) + '%';
+        barReceiver.style.width = ((s.receiver / 1200) * 100).toFixed(1) + '%';
+        simCmd.textContent = s.cmd;
+        simSender.textContent = s.sender;
+        simSupply.textContent = s.supply.toLocaleString('en-US') + ' UNI';
+        simNote.textContent = s.note;
+      }
+
+      simBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          simBtns.forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          renderSimStep(Number(btn.getAttribute('data-step')));
+        });
+      });
+      renderSimStep(0);
+
+      // 3. Searchable Commands Dictionary
+      var commandsData = [
+        {
+          cmd: 'npm run compile',
+          cat: 'terminale',
+          catLabel: 'Terminale',
+          desc: 'Compila tutti i file .sol in contracts/ con Solidity 0.8.28, controlla eventuali errori e genera ABI + bytecode in artifacts/.'
+        },
+        {
+          cmd: 'npm run node',
+          cat: 'terminale',
+          catLabel: 'Terminale',
+          desc: 'Avvia la blockchain locale Hardhat su http://127.0.0.1:8545 (Chain ID 31337) con 20 account di test pieni di ETH finti.'
+        },
+        {
+          cmd: 'npm run console',
+          cat: 'terminale',
+          catLabel: 'Terminale',
+          desc: 'Apre la console interattiva JavaScript collegata al nodo locale per fare deploy e chiamare le funzioni dal vivo.'
+        },
+        {
+          cmd: '.exit',
+          cat: 'terminale',
+          catLabel: 'Terminale',
+          desc: 'Chiude la console interattiva di Hardhat e ti riporta al prompt normale di macOS.'
+        },
+        {
+          cmd: 'const { ethers } = await network.create();',
+          cat: 'setup',
+          catLabel: 'Setup & Deploy',
+          desc: 'Carica la libreria Ethers.js v6 connessa alla rete attiva per poter inviare transazioni e leggere i contratti.'
+        },
+        {
+          cmd: 'const [owner, receiver] = await ethers.getSigners();',
+          cat: 'setup',
+          catLabel: 'Setup & Deploy',
+          desc: 'Prende i primi due portafogli di test di Hardhat: owner = Account #0 (0xf39F...2266), receiver = Account #1 (0x7099...79C8).'
+        },
+        {
+          cmd: 'const token = await ethers.deployContract("MyToken", ["UniToken", "UNI", 1000]);',
+          cat: 'setup',
+          catLabel: 'Setup & Deploy',
+          desc: 'Pubblica sulla blockchain locale il contratto MyToken passando nome, simbolo e 1000 token iniziali al constructor.'
+        },
+        {
+          cmd: 'await token.waitForDeployment();',
+          cat: 'setup',
+          catLabel: 'Setup & Deploy',
+          desc: 'Aspetta che la blockchain confermi davvero la creazione del contratto prima di passare all\'istruzione successiva.'
+        },
+        {
+          cmd: 'const tokenAddress = await token.getAddress();',
+          cat: 'setup',
+          catLabel: 'Setup & Deploy',
+          desc: 'Restituisce l\'indirizzo unico (0x...) dove vive MyToken: è l\'indirizzo da incollare in MetaMask e da passare a xzy.'
+        },
+        {
+          cmd: 'const caller = await ethers.deployContract("xzy", [tokenAddress]);',
+          cat: 'setup',
+          catLabel: 'Setup & Deploy',
+          desc: 'Pubblica il contratto xzy passando al constructor l\'indirizzo di MyToken, così può collegarsi tramite ERC20Interface.'
+        },
+        {
+          cmd: 'ethers.parseUnits("300", 18)',
+          cat: 'decimali',
+          catLabel: 'Decimali & Saldi',
+          desc: 'Converte "300" nel numero intero scalato con 18 zeri (300000000000000000000). Si usa SEMPRE quando invii quantità a Solidity.'
+        },
+        {
+          cmd: 'ethers.formatUnits(..., 18)',
+          cat: 'decimali',
+          catLabel: 'Decimali & Saldi',
+          desc: 'Fa l\'operazione inversa: divide per 10^18 e trasforma il numerone grezzo della blockchain in una stringa leggibile come \'300.0\'.'
+        },
+        {
+          cmd: 'await token.balanceOf(owner.address)',
+          cat: 'decimali',
+          catLabel: 'Decimali & Saldi',
+          desc: 'Funzione di sola lettura (gratis, zero gas): interroga il mapping balanceOf per sapere quanti token possiede quell\'indirizzo.'
+        },
+        {
+          cmd: 'await (await token.transfer(callerAddress, ...)).wait()',
+          cat: 'tx',
+          catLabel: 'Transazioni & Bonus',
+          desc: 'Forma compatta: l\'await interno invia la transazione di trasferimento da Account #0 a xzy; l\'await esterno aspetta la conferma nel blocco.'
+        },
+        {
+          cmd: 'await (await caller.sellToken(receiver.address, ...)).wait()',
+          cat: 'tx',
+          catLabel: 'Transazioni & Bonus',
+          desc: 'Chiama sellToken su xzy, che tramite ERC20Interface invoca MyToken.transfer() spendendo dal saldo di xzy verso receiver.'
+        },
+        {
+          cmd: 'await (await token.approve(receiver.address, ...)).wait()',
+          cat: 'tx',
+          catLabel: 'Transazioni & Bonus',
+          desc: 'Autorizza receiver a spendere fino a un certo importo di UNI per conto di owner, aggiornando il mapping allowance.'
+        },
+        {
+          cmd: 'await token.getAllowance(owner.address, receiver.address)',
+          cat: 'decimali',
+          catLabel: 'Decimali & Saldi',
+          desc: 'Legge (sola lettura) quanti token receiver è autorizzato a spendere a nome di owner.'
+        },
+        {
+          cmd: 'await (await token.minting(owner.address, receiver.address, ...)).wait()',
+          cat: 'tx',
+          catLabel: 'Transazioni & Bonus',
+          desc: 'Crea nuovi token dal nulla (solo owner può farlo) e li aggiunge sia a totalSupply sia al saldo di receiver.'
+        },
+        {
+          cmd: 'await (await token.burning(owner.address, receiver.address, ...)).wait()',
+          cat: 'tx',
+          catLabel: 'Transazioni & Bonus',
+          desc: 'Distrugge token esistenti dal saldo di receiver (solo owner può farlo), riducendo anche totalSupply.'
+        }
+      ];
+
+      var glossaryBody = document.getElementById('glossaryBody');
+      var glossarySearch = document.getElementById('glossarySearch');
+      var glossaryEmpty = document.getElementById('glossaryEmpty');
+      var activeCat = 'all';
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function renderGlossary() {
+        if (!glossaryBody) return;
+        var q = (glossarySearch ? glossarySearch.value : '').trim().toLowerCase();
+        glossaryBody.innerHTML = '';
+        var count = 0;
+
+        commandsData.forEach(function (item) {
+          var matchCat = activeCat === 'all' || item.cat === activeCat;
+          var matchText = !q ||
+            item.cmd.toLowerCase().indexOf(q) !== -1 ||
+            item.desc.toLowerCase().indexOf(q) !== -1 ||
+            item.catLabel.toLowerCase().indexOf(q) !== -1;
+
+          if (matchCat && matchText) {
+            count++;
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td><code>' + escapeHtml(item.cmd) + '</code></td>' +
+              '<td><span class="cat-badge">' + escapeHtml(item.catLabel) + '</span></td>' +
+              '<td>' + escapeHtml(item.desc) + '</td>';
+            glossaryBody.appendChild(tr);
+          }
+        });
+
+        if (glossaryEmpty) {
+          glossaryEmpty.style.display = count === 0 ? 'block' : 'none';
+        }
+      }
+
+      if (glossarySearch) {
+        glossarySearch.addEventListener('input', renderGlossary);
+      }
+      document.querySelectorAll('#filterPills .filter-pill').forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          document.querySelectorAll('#filterPills .filter-pill').forEach(function (p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          activeCat = pill.getAttribute('data-cat') || 'all';
+          renderGlossary();
+        });
+      });
+      renderGlossary();
+
+      // 4. Interactive Mini-Quiz
+      var quizData = [
+        {
+          q: '1. Perché abbiamo dovuto trasferire 300 UNI al contratto xzy prima di chiamare caller.sellToken(...)?',
+          opts: [
+            'Perché MetaMask non permette di fare transazioni con importi pari a zero',
+            'Perché dentro MyToken.transfer() il valore di msg.sender è il contratto xzy stesso, quindi xzy spende dal proprio saldo',
+            'Perché l\'interface ERC20Interface raddoppia automaticamente il costo in gas'
+          ],
+          ans: 1,
+          exp: 'Esatto! Quando xzy chiama token.transfer(...), agli occhi di MyToken chi sta spendendo i token è xzy, non Account #0.'
+        },
+        {
+          q: '2. Cosa contiene davvero un file interface come IERC20.sol?',
+          opts: [
+            'Solo le firme delle funzioni marcate external (senza corpo { ... }), come un telecomando verso un contratto già esistente',
+            'L\'intero codice di transfer, minting e burning copiato dal token',
+            'Le chiavi private di MetaMask per firmare i blocchi'
+          ],
+          ans: 0,
+          exp: 'Corretto! Un\'interface definisce solo i "tasti" disponibili su un altro contratto, senza duplicarne la logica.'
+        },
+        {
+          q: '3. A cosa serve ethers.parseUnits("300", 18) quando invii una quantità di token?',
+          opts: [
+            'A convertire gli ETH in dollari prima di mostrarli su MetaMask',
+            'A moltiplicare 300 per 10^18, perché Solidity lavora solo con numeri interi e non ha la virgola',
+            'A compilare il contratto MyToken nella cartella artifacts/'
+          ],
+          ans: 1,
+          exp: 'Esatto! Con decimals = 18, 1 token vale 10^18 unità minime: parseUnits moltiplica per inviare, formatUnits divide per leggere.'
+        },
+        {
+          q: '4. Cosa succede in MetaMask quando usi "Import tokens -> Custom token" con tokenAddress?',
+          opts: [
+            'MetaMask scarica i token dal computer sul server di Google',
+            'MetaMask legge symbol(), decimals() e balanceOf(tuoIndirizzo) dal contratto sulla rete Hardhat Local',
+            'MetaMask crea un nuovo contratto identico sulla blockchain reale'
+          ],
+          ans: 1,
+          exp: 'Giusto! I token restano sempre nel mapping balanceOf del contratto sulla blockchain; MetaMask si limita a leggerli e mostrarli.'
+        }
+      ];
+
+      var quizContainer = document.getElementById('quizContainer');
+      var quizScoreText = document.getElementById('quizScoreText');
+      var quizResetBtn = document.getElementById('quizResetBtn');
+      var answeredState = {};
+
+      function updateScore() {
+        var score = 0;
+        Object.keys(answeredState).forEach(function (k) {
+          if (answeredState[k]) score++;
+        });
+        if (quizScoreText) {
+          quizScoreText.textContent = 'Risposte corrette: ' + score + ' / ' + quizData.length;
+        }
+      }
+
+      function renderQuiz() {
+        if (!quizContainer) return;
+        quizContainer.innerHTML = '';
+        answeredState = {};
+        updateScore();
+
+        quizData.forEach(function (item, qIdx) {
+          var box = document.createElement('div');
+          box.className = 'quiz-item';
+
+          var qEl = document.createElement('div');
+          qEl.className = 'quiz-q';
+          qEl.textContent = item.q;
+          box.appendChild(qEl);
+
+          var optsEl = document.createElement('div');
+          optsEl.className = 'quiz-options';
+
+          var fbEl = document.createElement('div');
+          fbEl.className = 'quiz-feedback';
+
+          item.opts.forEach(function (optText, oIdx) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-opt';
+            btn.textContent = optText;
+
+            btn.addEventListener('click', function () {
+              var allBtns = optsEl.querySelectorAll('.quiz-opt');
+              allBtns.forEach(function (b) { b.disabled = true; });
+
+              if (oIdx === item.ans) {
+                btn.classList.add('correct');
+                fbEl.className = 'quiz-feedback show ok';
+                fbEl.textContent = item.exp;
+                answeredState[qIdx] = true;
+              } else {
+                btn.classList.add('wrong');
+                allBtns[item.ans].classList.add('correct');
+                fbEl.className = 'quiz-feedback show ko';
+                fbEl.textContent = 'Non proprio! ' + item.exp;
+                answeredState[qIdx] = false;
+              }
+              updateScore();
+            });
+
+            optsEl.appendChild(btn);
+          });
+
+          box.appendChild(optsEl);
+          box.appendChild(fbEl);
+          quizContainer.appendChild(box);
+        });
+      }
+
+      if (quizResetBtn) {
+        quizResetBtn.addEventListener('click', renderQuiz);
+      }
+      renderQuiz();
+
+      // 5. Sidebar scrollspy
+      var navLinks = Array.prototype.slice.call(document.querySelectorAll('#navList .nav-link'));
+      var sections = navLinks.map(function (link) {
+        var id = link.getAttribute('href').slice(1);
+        return document.getElementById(id);
+      });
+
+      function onScroll() {
+        var scrollPos = window.scrollY + 120;
+        var currentIdx = 0;
+        sections.forEach(function (sec, idx) {
+          if (sec && sec.offsetTop <= scrollPos) {
+            currentIdx = idx;
+          }
+        });
+        navLinks.forEach(function (link, idx) {
+          if (idx === currentIdx) link.classList.add('active');
+          else link.classList.remove('active');
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
